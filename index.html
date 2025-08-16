@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      /* Optional: Custom scrollbar styles */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createClient } = supabase;
+
+        // --- Lucide React Icons (mocked with SVG as we can't import) ---
+        const LayoutDashboard = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>;
+        const Building2 = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 22V2H6v20"/><path d="M10 2v20"/><path d="M14 2v20"/><path d="M18 10h-4"/><path d="M18 18h-4"/><path d="M18 6h-4"/><path d="M18 14h-4"/><path d="M10 6H6"/><path d="M10 14H6"/><path d="M10 10H6"/><path d="M10 18H6"/></svg>;
+        const Users = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+        const BookOpen = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const PersonStanding = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>;
+        const DollarSign = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+        const FileText = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>;
+        const LogOut = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>;
+        const Menu = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>;
+        const X = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+        const ArrowLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
+
+        // --- Component Imports (mocked for single-file) ---
+        const Button = ({ children, className = '', ...props }) => (
+          <button className={`px-4 py-2 rounded-md font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors ${className}`} {...props}>
+            {children}
+          </button>
+        );
+
+        const Input = ({ className = '', ...props }) => (
+          <input className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${className}`} {...props} />
+        );
+
+        const Card = ({ children, className = '', ...props }) => (
+          <div className={`rounded-lg shadow-md bg-white p-6 ${className}`} {...props}>
+            {children}
+          </div>
+        );
+
+        const CardHeader = ({ children, className = '', ...props }) => (
+          <div className={`mb-4 ${className}`} {...props}>
+            {children}
+          </div>
+        );
+
+        const CardTitle = ({ children, className = '', ...props }) => (
+          <h3 className={`text-xl font-bold text-gray-800 ${className}`} {...props}>
+            {children}
+          </h3>
+        );
+
+        const CardDescription = ({ children, className = '', ...props }) => (
+          <p className={`text-sm text-gray-500 ${className}`} {...props}>
+            {children}
+          </p>
+        );
+
+        const CardContent = ({ children, className = '', ...props }) => (
+          <div className={`space-y-4 ${className}`} {...props}>
+            {children}
+          </div>
+        );
+
+        const Spinner = () => (
+          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        );
+        
+        // --- Custom Modal Component for Confirmation ---
+        const Modal = ({ children, isOpen, onClose }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+                        {children}
+                    </div>
+                </div>
+            );
+        };
+        
+        // --- Main Application Component ---
+        function App() {
+          const [session, setSession] = useState({ user: { id: 'mock-user-id' } });
+          const [userRole, setUserRole] = useState('admin');
+          const [currentPage, setCurrentPage] = useState('Dashboard');
+          const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+          const [isLoading, setIsLoading] = useState(true);
+          const [hasSupabaseError, setHasSupabaseError] = useState(false);
+          const [supabaseClient, setSupabaseClient] = useState(null);
+
+          const handleLogout = async () => {
+            window.location.reload();
+          };
+
+          useEffect(() => {
+            const SUPABASE_URL = 'https://albgyiurtvupvqpruxjo.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsYmd5aXVydHZ1cHZxcHJ1eGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNDg2ODEsImV4cCI6MjA3MDYyNDY4MX0.rk8xEJeZFAKiSNSL0L5L0baxAA9RW60bM6MZwe7tO58';
+
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+                setHasSupabaseError(true);
+                setIsLoading(false);
+            } else {
+                setSupabaseClient(createClient(SUPABASE_URL, SUPABASE_KEY));
+                setHasSupabaseError(false);
+                setIsLoading(false);
+            }
+          }, []);
+
+          const pages = {
+            admin: [
+              { name: 'Dashboard', icon: LayoutDashboard },
+              { name: 'PEC Management', icon: Building2 },
+              { name: 'PEC Admins', icon: Users },
+              { name: 'Class Management', icon: BookOpen },
+              { name: 'Student Management', icon: PersonStanding },
+              { name: 'Teacher Management', icon: Users },
+              { name: 'Parent Management', icon: Users },
+              { name: 'Finance Management', icon: DollarSign },
+              { name: 'Reports & Analytics', icon: FileText },
+              { name: 'Document Management', icon: FileText },
+            ],
+            pec_admin: [
+              { name: 'Dashboard', icon: LayoutDashboard },
+              { name: 'Class Management', icon: BookOpen },
+              { name: 'Student Management', icon: PersonStanding },
+              { name: 'Teacher Management', icon: Users },
+              { name: 'Parent Management', icon: Users },
+              { name: 'Finance Management', icon: DollarSign },
+              { name: 'Reports & Analytics', icon: FileText },
+              { name: 'Document Management', icon: FileText },
+            ],
+            teacher: [
+              { name: 'Dashboard', icon: LayoutDashboard },
+              { name: 'My Classes', icon: BookOpen },
+              { name: 'My Students', icon: PersonStanding },
+            ],
+            student: [
+              { name: 'Dashboard', icon: LayoutDashboard },
+              { name: 'My Classes', icon: BookOpen },
+              { name: 'My Report Card', icon: FileText },
+            ],
+            parent: [
+              { name: 'Dashboard', icon: LayoutDashboard },
+              { name: 'My Children', icon: PersonStanding },
+              { name: 'Documents', icon: FileText },
+            ],
+          };
+
+          const getPageContent = () => {
+            if (!supabaseClient) return null; // Prevent rendering components that need Supabase
+            switch (currentPage) {
+              case 'Dashboard':
+                return <Dashboard supabase={supabaseClient} userRole={userRole} />;
+              case 'PEC Management':
+                return <PECManagement supabase={supabaseClient} />;
+              case 'PEC Admins':
+                return <PecAdmins />;
+              case 'Class Management':
+              case 'My Classes':
+                return <ClassManagement />;
+              case 'Student Management':
+              case 'My Students':
+              case 'My Children':
+                return <StudentManagement />;
+              case 'Teacher Management':
+                return <TeacherManagement />;
+              case 'Parent Management':
+                return <ParentManagement />;
+              case 'Finance Management':
+                return <FinanceManagement />;
+              case 'Reports & Analytics':
+              case 'My Report Card':
+                return <ReportsAndAnalytics />;
+              case 'Document Management':
+              case 'Documents':
+                return <DocumentManagement />;
+              default:
+                return <div>Page not found.</div>;
+            }
+          };
+
+          if (isLoading) {
+            return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+          }
+
+          if (hasSupabaseError) {
+              return (
+                <div className="flex items-center justify-center min-h-screen bg-red-100 text-red-800 p-8 rounded-lg shadow-md">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold mb-4">Supabase Connection Error</h2>
+                        <p className="text-lg">
+                            Please replace the placeholder values for `SUPABASE_URL` and `SUPABASE_KEY`
+                            with your actual Supabase project credentials in the code.
+                        </p>
+                    </div>
+                </div>
+              );
+          }
+
+          return (
+            <div className="flex bg-gray-100 min-h-screen">
+              <>
+                {/* Sidebar for navigation */}
+                <aside
+                  className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                >
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-indigo-600">PEC Admin</h2>
+                    <Button onClick={() => setIsSidebarOpen(false)} className="md:hidden">
+                      <X />
+                    </Button>
+                  </div>
+                  <nav className="mt-4 flex flex-col space-y-2 p-4">
+                    {userRole && pages[userRole]?.map((page) => (
+                      <button
+                        key={page.name}
+                        onClick={() => {
+                          setCurrentPage(page.name);
+                          setIsSidebarOpen(false);
+                        }}
+                        className={`flex items-center gap-2 p-2 rounded-md transition-colors ${
+                          currentPage === page.name ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        <page.icon />
+                        <span>{page.name}</span>
+                      </button>
+                    ))}
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 p-2 rounded-md transition-colors text-red-600 hover:bg-red-100"
+                    >
+                      <LogOut />
+                      <span>Logout</span>
+                    </button>
+                  </nav>
+                </aside>
+
+                {/* Main Content Area */}
+                <div className="flex-1 md:ml-64 p-4 transition-all">
+                  <header className="flex items-center justify-between p-4 bg-white shadow-md rounded-md mb-4">
+                    <Button onClick={() => setIsSidebarOpen(true)} className="md:hidden">
+                      <Menu />
+                    </Button>
+                    <h1 className="text-2xl font-bold text-gray-800">{currentPage}</h1>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">Welcome, {userRole}</span>
+                    </div>
+                  </header>
+                  <main className="container mx-auto p-4 bg-white shadow-md rounded-md">
+                    {getPageContent()}
+                  </main>
+                </div>
+              </>
+            </div>
+          );
+        }
+
+        // Dashboard Page
+        const Dashboard = ({ userRole, supabase }) => {
+          const [stats, setStats] = useState({ pecs: 0, students: 0, teachers: 0 });
+
+          useEffect(() => {
+            const fetchStats = async () => {
+              if (!supabase) return;
+              try {
+                const { count: pecCount } = await supabase.from('t_pec').select('*', { count: 'exact' });
+                const { count: studentCount } = await supabase.from('t_people').select('*', { count: 'exact' }).eq('PPL_CAT', 'Student');
+                const { count: teacherCount } = await supabase.from('t_people').select('*', { count: 'exact' }).eq('PPL_CAT', 'Teacher');
+
+                setStats({
+                  pecs: pecCount,
+                  students: studentCount,
+                  teachers: teacherCount,
+                });
+              } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+              }
+            };
+            fetchStats();
+          }, [supabase]);
+
+          return (
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold">Welcome to your {userRole} Dashboard!</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Total PECs</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-4xl font-bold">{stats.pecs}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Total Students</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-4xl font-bold">{stats.students}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Total Teachers</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-4xl font-bold">{stats.teachers}</p>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-2">Recent Notifications</h3>
+                <ul className="bg-gray-50 p-4 rounded-md">
+                  <li className="p-2 border-b">Reminder: Attendance for this week is due by Friday.</li>
+                  <li className="p-2 border-b">New document "School Calendar 2025" has been uploaded.</li>
+                  <li className="p-2">Report cards for Q2 are now available.</li>
+                </ul>
+              </div>
+            </div>
+          );
+        };
+
+        // --- PEC Management Page with original date format display ---
+        const PECManagement = ({ supabase }) => {
+            const [pecs, setPecs] = useState([]);
+            const [banks, setBanks] = useState([]);
+            const [states, setStates] = useState([]);
+            const [selectedPec, setSelectedPec] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [isEditing, setIsEditing] = useState(false);
+            const [view, setView] = useState('list'); // 'list', 'add', 'details'
+            const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+            const [message, setMessage] = useState('');
+
+            const initialPecData = {
+                pec_name: '',
+                ros_no: '',
+                day_operate: '',
+                time_operate: '',
+                bank_name: '',
+                bank_acct_no: '',
+                add_line1: '',
+                add_line2: '',
+                add_postcode: '',
+                add_city: '',
+                add_state: ''
+            };
+
+            const [formData, setFormData] = useState(initialPecData);
+
+            const fetchPecs = async () => {
+                setIsLoading(true);
+                setMessage('');
+                try {
+                    const { data, error } = await supabase
+                        .from('t_pec')
+                        .select(`
+                          add_id, pec_name, ros_no, day_operate, time_operate, bank_name, bank_acct_no,
+                          t_address ( add_line1, add_line2, add_postcode, add_city, add_state )
+                        `);
+                    
+                    if (error) throw error;
+                    setPecs(data);
+                } catch (error) {
+                    setMessage(`Error fetching PECs: ${error.message}`);
+                    console.error('Error fetching PECs:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            
+            const fetchBanks = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('t_bank')
+                        .select('bank_name');
+                    
+                    if (error) throw error;
+                    setBanks(data.map(bank => bank.bank_name));
+                } catch (error) {
+                    setMessage(`Error fetching banks: ${error.message}`);
+                    console.error('Error fetching banks:', error);
+                }
+            };
+            
+            const fetchStates = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('t_state')
+                        .select('state_name');
+                    
+                    if (error) throw error;
+                    setStates(data.map(state => state.state_name));
+                } catch (error) {
+                    setMessage(`Error fetching states: ${error.message}`);
+                    console.error('Error fetching states:', error);
+                }
+            };
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                
+                // Postcode validation logic
+                if (name === 'add_postcode') {
+                    const sanitizedValue = value.replace(/[^0-9]/g, '').slice(0, 8);
+                    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+                } 
+                // ROS No character limit logic
+                else if (name === 'ros_no') {
+                    setFormData(prev => ({ ...prev, [name]: value.slice(0, 20) }));
+                } else {
+                    setFormData(prev => ({ ...prev, [name]: value }));
+                }
+            };
+
+            const addPec = async (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                setMessage('');
+
+                try {
+                    // 1. Insert into t_address
+                    const { data: addressData, error: addressError } = await supabase
+                        .from('t_address')
+                        .insert({
+                            add_line1: formData.add_line1,
+                            add_line2: formData.add_line2,
+                            add_postcode: formData.add_postcode,
+                            add_city: formData.add_city,
+                            add_state: formData.add_state
+                        })
+                        .select()
+                        .single();
+                    
+                    if (addressError) throw addressError;
+
+                    // 2. Insert into t_pec using the new address id
+                    const { error: pecError } = await supabase
+                        .from('t_pec')
+                        .insert([{
+                            pec_name: formData.pec_name,
+                            ros_no: formData.ros_no,
+                            day_operate: formData.day_operate,
+                            time_operate: formData.time_operate,
+                            bank_name: formData.bank_name,
+                            bank_acct_no: formData.bank_acct_no,
+                            add_id: addressData.add_id
+                        }]);
+                    
+                    if (pecError) throw pecError;
+
+                    setMessage(`Successfully added PEC: ${formData.pec_name}`);
+                    // This is the key line to reset the form fields.
+                    setFormData(initialPecData);
+                    fetchPecs();
+                    setView('list');
+                } catch (error) {
+                    setMessage(`Error adding PEC: ${error.message}`);
+                    console.error('Error adding PEC:', error);
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+            
+            const handleSelectPec = (pec) => {
+                setSelectedPec(pec);
+                setFormData({
+                    pec_name: pec.pec_name,
+                    ros_no: pec.ros_no,
+                    day_operate: pec.day_operate,
+                    time_operate: pec.time_operate,
+                    bank_name: pec.bank_name,
+                    bank_acct_no: pec.bank_acct_no,
+                    add_line1: pec.t_address?.add_line1 || '',
+                    add_line2: pec.t_address?.add_line2 || '',
+                    add_postcode: pec.t_address?.add_postcode || '',
+                    add_city: pec.t_address?.add_city || '',
+                    add_state: pec.t_address?.add_state || ''
+                });
+                setView('details');
+                setIsEditing(false);
+            };
+
+            const saveEdit = async (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                setMessage('');
+                try {
+                    // 1. Update t_address
+                    const { error: addressError } = await supabase
+                        .from('t_address')
+                        .update({
+                            add_line1: formData.add_line1,
+                            add_line2: formData.add_line2,
+                            add_postcode: formData.add_postcode,
+                            add_city: formData.add_city,
+                            add_state: formData.add_state
+                        })
+                        .eq('add_id', selectedPec.add_id);
+                    
+                    if (addressError) throw addressError;
+                    
+                    // 2. Update t_pec, using pec_name as the primary key
+                    const { error: pecError } = await supabase
+                        .from('t_pec')
+                        .update({
+                            pec_name: formData.pec_name,
+                            ros_no: formData.ros_no,
+                            day_operate: formData.day_operate,
+                            time_operate: formData.time_operate,
+                            bank_name: formData.bank_name,
+                            bank_acct_no: formData.bank_acct_no
+                        })
+                        .eq('pec_name', selectedPec.pec_name);
+                    
+                    if (pecError) throw pecError;
+
+                    setMessage(`Successfully updated PEC: ${formData.pec_name}`);
+                    setIsEditing(false);
+                    setSelectedPec(null); 
+                    fetchPecs(); 
+                    setView('list');
+                } catch (error) {
+                    setMessage(`Error updating PEC: ${error.message}`);
+                    console.error('Error updating PEC:', error);
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            const handleDelete = () => {
+                setIsConfirmingDelete(true);
+            };
+
+            const confirmDelete = async () => {
+                setIsSubmitting(true);
+                setMessage('');
+                try {
+                    // Delete t_pec first, using pec_name as the primary key
+                    const { error: pecError } = await supabase
+                        .from('t_pec')
+                        .delete()
+                        .eq('pec_name', selectedPec.pec_name);
+                    
+                    if (pecError) throw pecError;
+
+                    // Then delete the address
+                    if (selectedPec.add_id) {
+                        const { error: addressError } = await supabase
+                            .from('t_address')
+                            .delete()
+                            .eq('add_id', selectedPec.add_id);
+                        
+                        if (addressError) throw addressError;
+                    }
+                    
+                    setMessage(`Successfully deleted PEC: ${selectedPec.pec_name}`);
+                    setSelectedPec(null);
+                    setIsConfirmingDelete(false);
+                    fetchPecs();
+                    setView('list');
+                } catch (error) {
+                    setMessage(`Error deleting PEC: ${error.message}`);
+                    console.error('Error deleting PEC:', error);
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            const cancelDelete = () => {
+                setIsConfirmingDelete(false);
+            };
+            
+            useEffect(() => {
+                if (supabase) {
+                    fetchPecs();
+                    fetchBanks();
+                    fetchStates();
+                }
+            }, [supabase]);
+
+            if (isLoading) {
+                return <div className="p-4 text-center">Loading PECs...</div>;
+            }
+
+            return (
+                <div className="flex flex-col h-full space-y-4">
+                    {message && (
+                        <div className="p-3 text-sm rounded-md bg-green-500 text-white">
+                            {message}
+                        </div>
+                    )}
+                    
+                    {view !== 'list' && (
+                        <Button onClick={() => { setView('list'); setFormData(initialPecData); }} className="w-fit mb-4">
+                            <ArrowLeft className="mr-2"/> Back to PEC List
+                        </Button>
+                    )}
+
+                    {view === 'list' && (
+                        <Card>
+                            <CardHeader className="flex justify-between items-center">
+                                <CardTitle>Existing PECs</CardTitle>
+                                <Button onClick={() => setView('add')}>Add New PEC</Button>
+                            </CardHeader>
+                            <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+                                {pecs.length > 0 ? (
+                                    pecs.map((pec) => (
+                                        <button
+                                            key={pec.pec_name}
+                                            onClick={() => handleSelectPec(pec)}
+                                            className="w-full p-3 text-left rounded-md transition-colors hover:bg-gray-100"
+                                        >
+                                            <p className="font-semibold">{pec.pec_name}</p>
+                                            <p className="text-xs text-gray-500">{pec.t_address?.add_city}, {pec.t_address?.add_state}</p>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-center">No PECs found. Click "Add New PEC" to get started.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                    
+                    {view === 'add' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Add New PEC</CardTitle>
+                                <CardDescription>Fill out the form below to add a new PEC.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={addPec} className="flex flex-col gap-4">
+                                    <Input name="pec_name" placeholder="PEC Name (Primary Key)" value={formData.pec_name} onChange={handleChange} required />
+                                    <Input name="ros_no" placeholder="ROS No (max 20 characters)" value={formData.ros_no} onChange={handleChange} maxLength="20" />
+                                    
+                                    <div className="flex space-x-2">
+                                        <div className="flex-1">
+                                            <label htmlFor="day_operate" className="block text-sm font-medium text-gray-700">Operating Day</label>
+                                            <Input type="date" id="day_operate" name="day_operate" value={formData.day_operate} onChange={handleChange} required />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label htmlFor="time_operate" className="block text-sm font-medium text-gray-700">Operating Time</label>
+                                            <Input type="time" id="time_operate" name="time_operate" value={formData.time_operate} onChange={handleChange} required />
+                                        </div>
+                                    </div>
+                                    
+                                    <Input name="add_line1" placeholder="Address Line 1" value={formData.add_line1} onChange={handleChange} />
+                                    <Input name="add_line2" placeholder="Address Line 2" value={formData.add_line2} onChange={handleChange} />
+                                    <Input name="add_postcode" placeholder="Postcode (max 8 digits)" value={formData.add_postcode} onChange={handleChange} />
+                                    <Input name="add_city" placeholder="City" value={formData.add_city} onChange={handleChange} />
+                                    
+                                    <select
+                                        name="add_state"
+                                        value={formData.add_state}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        required
+                                    >
+                                        <option value="" disabled>Select a state</option>
+                                        {states.map((state, index) => (
+                                            <option key={index} value={state}>{state}</option>
+                                        ))}
+                                    </select>
+                                    
+                                    <select
+                                        name="bank_name"
+                                        value={formData.bank_name}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        required
+                                    >
+                                        <option value="" disabled>Select a bank</option>
+                                        {banks.map((bank, index) => (
+                                            <option key={index} value={bank}>{bank}</option>
+                                        ))}
+                                    </select>
+                                    
+                                    <Input name="bank_acct_no" placeholder="Bank Account Number" value={formData.bank_acct_no} onChange={handleChange} maxLength="25" />
+                                    <div className="flex gap-2">
+                                        <Button type="submit" disabled={isSubmitting}>
+                                            {isSubmitting ? <Spinner /> : 'Add PEC'}
+                                        </Button>
+                                        <Button type="button" onClick={() => setView('list')} className="bg-gray-500 hover:bg-gray-600">
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {view === 'details' && selectedPec && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{isEditing ? 'Edit PEC' : selectedPec.pec_name}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {isEditing ? (
+                                    <form onSubmit={saveEdit} className="space-y-4">
+                                        <Input name="pec_name" placeholder="PEC Name (Primary Key)" value={formData.pec_name} onChange={handleChange} required />
+                                        <Input name="ros_no" placeholder="ROS No (max 20 characters)" value={formData.ros_no} onChange={handleChange} maxLength="20" />
+                                        
+                                        <div className="flex space-x-2">
+                                            <div className="flex-1">
+                                                <label htmlFor="day_operate" className="block text-sm font-medium text-gray-700">Operating Day</label>
+                                                <Input type="date" id="day_operate" name="day_operate" value={formData.day_operate} onChange={handleChange} required />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label htmlFor="time_operate" className="block text-sm font-medium text-gray-700">Operating Time</label>
+                                                <Input type="time" id="time_operate" name="time_operate" value={formData.time_operate} onChange={handleChange} required />
+                                            </div>
+                                        </div>
+
+                                        <Input name="add_line1" placeholder="Address Line 1" value={formData.add_line1} onChange={handleChange} />
+                                        <Input name="add_line2" placeholder="Address Line 2" value={formData.add_line2} onChange={handleChange} />
+                                        <Input name="add_postcode" placeholder="Postcode (max 8 digits)" value={formData.add_postcode} onChange={handleChange} />
+                                        <Input name="add_city" placeholder="City" value={formData.add_city} onChange={handleChange} />
+                                        
+                                        <select
+                                            name="add_state"
+                                            value={formData.add_state}
+                                            onChange={handleChange}
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            required
+                                        >
+                                            <option value="" disabled>Select a state</option>
+                                            {states.map((state, index) => (
+                                                <option key={index} value={state}>{state}</option>
+                                            ))}
+                                        </select>
+                                        
+                                        <select
+                                            name="bank_name"
+                                            value={formData.bank_name}
+                                            onChange={handleChange}
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            required
+                                        >
+                                            <option value="" disabled>Select a bank</option>
+                                            {banks.map((bank, index) => (
+                                                <option key={index} value={bank}>{bank}</option>
+                                            ))}
+                                        </select>
+                                        
+                                        <Input name="bank_acct_no" placeholder="Bank Account Number" value={formData.bank_acct_no} onChange={handleChange} maxLength="25" />
+                                        <div className="flex gap-2">
+                                            <Button type="submit" disabled={isSubmitting} className="bg-green-500 hover:bg-green-600">
+                                                {isSubmitting ? <Spinner /> : 'Save'}
+                                            </Button>
+                                            <Button type="button" onClick={() => setIsEditing(false)} className="bg-gray-500 hover:bg-gray-600">Cancel</Button>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <div className="space-y-4 text-sm">
+                                        <p><strong>PEC Name:</strong> {selectedPec.pec_name || 'N/A'}</p>
+                                        <p><strong>ROS No:</strong> {selectedPec.ros_no || 'N/A'}</p>
+                                        <p><strong>Operating Day:</strong> {selectedPec.day_operate || 'N/A'}</p>
+                                        <p><strong>Operating Time:</strong> {selectedPec.time_operate || 'N/A'}</p>
+                                        <p>
+                                            <strong>Address:</strong>
+                                            <br />
+                                            {selectedPec.t_address?.add_line1 || 'N/A'}
+                                            <br />
+                                            {selectedPec.t_address?.add_line2 || ''}
+                                            <br/>
+                                            {selectedPec.t_address?.add_postcode || ''} {selectedPec.t_address?.add_city || ''} {selectedPec.t_address?.add_state || ''}
+                                        </p>
+                                        <p><strong>Bank Name:</strong> {selectedPec.bank_name || 'N/A'}</p>
+                                        <p><strong>Bank Account No:</strong> {selectedPec.bank_acct_no || 'N/A'}</p>
+                                        <div className="flex gap-2">
+                                            <Button onClick={() => setIsEditing(true)} className="bg-yellow-500 hover:bg-yellow-600">Edit</Button>
+                                            <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Delete Confirmation Modal */}
+                    <Modal isOpen={isConfirmingDelete} onClose={cancelDelete}>
+                        <h3 className="text-lg font-bold">Confirm Deletion</h3>
+                        <p className="text-gray-600 my-4">
+                            Are you sure you want to delete **{selectedPec?.pec_name}**? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <Button onClick={cancelDelete} className="bg-gray-500 hover:bg-gray-600">Cancel</Button>
+                            <Button onClick={confirmDelete} disabled={isSubmitting} className="bg-red-500 hover:bg-red-600">
+                                {isSubmitting ? <Spinner /> : 'Delete'}
+                            </Button>
+                        </div>
+                    </Modal>
+                </div>
+            );
+        };
+
+        // Placeholder components for other pages
+        const PecAdmins = () => <div className="p-4">PEC Administrator Management functionality goes here.</div>;
+        const ClassManagement = () => <div className="p-4">Class Management functionality goes here.</div>;
+        const StudentManagement = () => <div className="p-4">Student Management functionality goes here.</div>;
+        const TeacherManagement = () => <div className="p-4">Teacher Management functionality goes here.</div>;
+        const ParentManagement = () => <div className="p-4">Parent Management functionality goes here.</div>;
+        const FinanceManagement = () => <div className="p-4">Finance Management functionality goes here.</div>;
+        const ReportsAndAnalytics = () => <div className="p-4">Reports and Analytics functionality goes here.</div>;
+        const DocumentManagement = () => <div className="p-4">Document Management functionality goes here.</div>;
+
+        // Render the App component
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
+
