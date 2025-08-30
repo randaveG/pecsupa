@@ -1,847 +1,3766 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Management App</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script crossorigin src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-      /* Optional: Custom scrollbar styles */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 10px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #555;
-      }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Education Center Management</title>
+  <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div id="root"></div>
+<body class="bg-slate-100">
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { createClient } = supabase;
+  <script type="text/babel">
+    const { createClient } = supabase;
+    const supabaseUrl = 'https://albgyiurtvupvqpruxjo.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsYmd5aXVydHZ1cHZxcHJ1eGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNDg2ODEsImV4cCI6MjA3MDYyNDY4MX0.rk8xEJeZFAKiSNSL0L5L0baxAA9RW60bM6MZwe7tO58';
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-        // --- Lucide React Icons (mocked with SVG as we can't import) ---
-        const LayoutDashboard = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>;
-        const Building2 = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 22V2H6v20"/><path d="M10 2v20"/><path d="M14 2v20"/><path d="M18 10h-4"/><path d="M18 18h-4"/><path d="M18 6h-4"/><path d="M18 14h-4"/><path d="M10 6H6"/><path d="M10 14H6"/><path d="M10 10H6"/><path d="M10 18H6"/></svg>;
-        const Users = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-        const BookOpen = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
-        const PersonStanding = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>;
-        const DollarSign = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
-        const FileText = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>;
-        const LogOut = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>;
-        const Menu = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>;
-        const X = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
-        const ArrowLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
+    function App() {
+      const [sidebarOpen, setSidebarOpen] = React.useState(false);
+      const [currentPage, setCurrentPage] = React.useState('Dashboard');
+      const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+      const [userInfo, setUserInfo] = React.useState(null);
 
-        // --- Component Imports (mocked for single-file) ---
-        const Button = ({ children, className = '', ...props }) => (
-          <button className={`px-4 py-2 rounded-md font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors ${className}`} {...props}>
-            {children}
-          </button>
-        );
+      // Check if user is already logged in (from localStorage)
+      React.useEffect(() => {
+        const savedUserInfo = localStorage.getItem('userInfo');
+        if (savedUserInfo) {
+          setUserInfo(JSON.parse(savedUserInfo));
+          setIsLoggedIn(true);
+        }
+      }, []);
 
-        const Input = ({ className = '', ...props }) => (
-          <input className={`w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${className}`} {...props} />
-        );
+      const toggleSidebar = () => {
+        setSidebarOpen(!sidebarOpen);
+      };
 
-        const Card = ({ children, className = '', ...props }) => (
-          <div className={`rounded-lg shadow-md bg-white p-6 ${className}`} {...props}>
-            {children}
-          </div>
-        );
+      const handleLogin = (userData) => {
+        setUserInfo(userData);
+        setIsLoggedIn(true);
+        localStorage.setItem('userInfo', JSON.stringify(userData));
+      };
 
-        const CardHeader = ({ children, className = '', ...props }) => (
-          <div className={`mb-4 ${className}`} {...props}>
-            {children}
-          </div>
-        );
+      const handleLogout = () => {
+        setUserInfo(null);
+        setIsLoggedIn(false);
+        localStorage.removeItem('userInfo');
+        setCurrentPage('Dashboard');
+      };
 
-        const CardTitle = ({ children, className = '', ...props }) => (
-          <h3 className={`text-xl font-bold text-gray-800 ${className}`} {...props}>
-            {children}
-          </h3>
-        );
-
-        const CardDescription = ({ children, className = '', ...props }) => (
-          <p className={`text-sm text-gray-500 ${className}`} {...props}>
-            {children}
-          </p>
-        );
-
-        const CardContent = ({ children, className = '', ...props }) => (
-          <div className={`space-y-4 ${className}`} {...props}>
-            {children}
-          </div>
-        );
-
-        const Spinner = () => (
-          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        );
+      const renderPage = () => {
+        if (!isLoggedIn) {
+          return <Login onLogin={handleLogin} />;
+        }
         
-        // --- Custom Modal Component for Confirmation ---
-        const Modal = ({ children, isOpen, onClose }) => {
-            if (!isOpen) return null;
-            return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
-                        {children}
-                    </div>
-                </div>
-            );
-        };
-        
-        // --- Main Application Component ---
-        function App() {
-          const [session, setSession] = useState({ user: { id: 'mock-user-id' } });
-          const [userRole, setUserRole] = useState('admin');
-          const [currentPage, setCurrentPage] = useState('Dashboard');
-          const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-          const [isLoading, setIsLoading] = useState(true);
-          const [hasSupabaseError, setHasSupabaseError] = useState(false);
-          const [supabaseClient, setSupabaseClient] = useState(null);
-
-          const handleLogout = async () => {
-            window.location.reload();
-          };
-
-          useEffect(() => {
-            const SUPABASE_URL = 'https://albgyiurtvupvqpruxjo.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsYmd5aXVydHZ1cHZxcHJ1eGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNDg2ODEsImV4cCI6MjA3MDYyNDY4MX0.rk8xEJeZFAKiSNSL0L5L0baxAA9RW60bM6MZwe7tO58';
-
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-                setHasSupabaseError(true);
-                setIsLoading(false);
-            } else {
-                setSupabaseClient(createClient(SUPABASE_URL, SUPABASE_KEY));
-                setHasSupabaseError(false);
-                setIsLoading(false);
-            }
-          }, []);
-
-          const pages = {
-            admin: [
-              { name: 'Dashboard', icon: LayoutDashboard },
-              { name: 'PEC Management', icon: Building2 },
-              { name: 'PEC Admins', icon: Users },
-              { name: 'Class Management', icon: BookOpen },
-              { name: 'Student Management', icon: PersonStanding },
-              { name: 'Teacher Management', icon: Users },
-              { name: 'Parent Management', icon: Users },
-              { name: 'Finance Management', icon: DollarSign },
-              { name: 'Reports & Analytics', icon: FileText },
-              { name: 'Document Management', icon: FileText },
-            ],
-            pec_admin: [
-              { name: 'Dashboard', icon: LayoutDashboard },
-              { name: 'Class Management', icon: BookOpen },
-              { name: 'Student Management', icon: PersonStanding },
-              { name: 'Teacher Management', icon: Users },
-              { name: 'Parent Management', icon: Users },
-              { name: 'Finance Management', icon: DollarSign },
-              { name: 'Reports & Analytics', icon: FileText },
-              { name: 'Document Management', icon: FileText },
-            ],
-            teacher: [
-              { name: 'Dashboard', icon: LayoutDashboard },
-              { name: 'My Classes', icon: BookOpen },
-              { name: 'My Students', icon: PersonStanding },
-            ],
-            student: [
-              { name: 'Dashboard', icon: LayoutDashboard },
-              { name: 'My Classes', icon: BookOpen },
-              { name: 'My Report Card', icon: FileText },
-            ],
-            parent: [
-              { name: 'Dashboard', icon: LayoutDashboard },
-              { name: 'My Children', icon: PersonStanding },
-              { name: 'Documents', icon: FileText },
-            ],
-          };
-
-          const getPageContent = () => {
-            if (!supabaseClient) return null; // Prevent rendering components that need Supabase
-            switch (currentPage) {
-              case 'Dashboard':
-                return <Dashboard supabase={supabaseClient} userRole={userRole} />;
-              case 'PEC Management':
-                return <PECManagement supabase={supabaseClient} />;
-              case 'PEC Admins':
-                return <PecAdmins />;
-              case 'Class Management':
-              case 'My Classes':
-                return <ClassManagement />;
-              case 'Student Management':
-              case 'My Students':
-              case 'My Children':
-                return <StudentManagement />;
+        switch(currentPage) {
+          case 'Center Management':
+            return <CenterManagement userInfo={userInfo} />;
               case 'Teacher Management':
-                return <TeacherManagement />;
-              case 'Parent Management':
-                return <ParentManagement />;
-              case 'Finance Management':
-                return <FinanceManagement />;
-              case 'Reports & Analytics':
-              case 'My Report Card':
-                return <ReportsAndAnalytics />;
-              case 'Document Management':
-              case 'Documents':
-                return <DocumentManagement />;
-              default:
-                return <div>Page not found.</div>;
+            return <TeacherManagement userInfo={userInfo} />;
+          case 'Student Management':
+            return <StudentManagement userInfo={userInfo}/>;
+            //return <StudentManagement />;
+          case 'Financial Management':
+            return <FinancialManagement userInfo={userInfo}/>;
+          case 'Reports & Analytics':
+            return <ReportsAnalytics userInfo={userInfo}/>;
+          case 'Document Management':
+            return <DocumentManagement />;PEC
+          case 'Logout':
+             handleLogout();
+            return <Logout />;
+          default:
+            return <Dashboard />;
+        }
+      };
+
+      if (!isLoggedIn) {
+        return <Login onLogin={handleLogin} />;
+      }
+
+      return (
+        <div className="flex h-screen overflow-hidden">
+          {/* User info bar at the top */}
+          <div className="absolute top-0 right-0 m-4 bg-white p-2 rounded shadow-md z-10">
+            {userInfo && (
+              <div className="text-sm">
+                <span className="font-semibold">{userInfo.user_name}</span> 
+                <span className="text-gray-600"> ({userInfo.user_role})</span>
+                <span className="text-xs text-gray-500 ml-2">[ID: {userInfo.user_id}</span>
+                <span className="text-xs text-gray-500 ml-2"> PEC Code: {userInfo.user_pec_code}]</span>
+                
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block bg-slate-800 text-slate-100 w-64 flex-shrink-0`}>
+            <div className="p-4">
+              <h1 className="text-xl font-bold">Education Center</h1>
+            </div>
+            <nav className="mt-6">
+              <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              } text="Dashboard" onClick={() => setCurrentPage('Dashboard')} />
+              
+              <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              } text="Center Management" onClick={() => setCurrentPage('Center Management')} />
+              
+                <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              } text="Teacher Management" onClick={() => setCurrentPage('Teacher Management')} />
+              
+              <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              } text="Student Management" onClick={() => setCurrentPage('Student Management')} />
+              
+              <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              } text="Financial Management" onClick={() => setCurrentPage('Financial Management')} />
+              
+              <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              } text="Reports & Analytics" onClick={() => setCurrentPage('Reports & Analytics')} />
+              
+              <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              } text="Document Management" onClick={() => setCurrentPage('Document Management')} />
+              
+              <SidebarItem icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              } text="Logout" onClick={() => setCurrentPage('Logout')} />
+
+            </nav>
+          </div>
+
+          {/* Main content */}
+          <div className="flex-1 overflow-auto">
+            {/* Mobile header */}
+            <div className="md:hidden bg-slate-800 text-slate-100 p-4 flex items-center">
+              <button onClick={toggleSidebar} className="mr-4">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <h1 className="text-xl font-bold">{currentPage}</h1>
+            </div>
+
+            {/* Page content */}
+            <div className="p-6">
+              <h1 className="text-2xl font-bold mb-6">{currentPage}</h1>
+              {renderPage()}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+function Login({ onLogin }) {
+  const [userid, setUserID] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [peccode, setPECcode] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [pecCodes, setPecCodes] = React.useState([]);
+
+  // Fetch distinct PEC codes on component mount with cleanup
+  React.useEffect(() => {
+    let isMounted = true;
+    
+    const fetchPecCodes = async () => {
+      const { data, error } = await supabaseClient
+        .from('t_users')
+        .select('t_user_pec_code')
+        .not('t_user_pec_code', 'is', null)
+        .order('t_user_pec_code');
+      
+      if (!error && data && isMounted) {
+        // Get distinct PEC codes
+        const distinctCodes = [...new Set(data.map(item => item.t_user_pec_code.trim()))];
+        setPecCodes(distinctCodes);
+      }
+    };
+    
+    fetchPecCodes();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      // Encode the password with Base64
+      const encodedPassword = btoa(password);
+
+      // Query all users to manually check credentials
+      const { data: users, error: queryError } = await supabaseClient
+        .from('t_users')
+        .select('*');
+
+      if (queryError) {
+        setError('Database error: ' + queryError.message);
+        console.error('Login error:', queryError);
+        setLoading(false);
+        return;
+      }
+
+      let matchedUser = null;
+      
+      // Find the user with matching credentials
+      matchedUser = users.find(user => {
+        const userIdMatch = user.t_user_id.trim() === userid.trim();
+        const passwordMatch = user.t_user_password.trim() === encodedPassword.trim();
+        
+        // If user is PA, only check username and password
+        if (user.t_user_role.trim() === "PA") {
+          return userIdMatch && passwordMatch;
+        } 
+        // For other roles, also check PEC code
+        else {
+          const peccodeMatch = user.t_user_pec_code.trim() === peccode.trim();
+          return userIdMatch && passwordMatch && peccodeMatch;
+        }
+      });
+
+      if (matchedUser) {
+        // Successfully logged in
+        onLogin({
+          user_id: matchedUser.t_user_id,
+          user_name: matchedUser.t_user_name.trim(),
+          user_role: matchedUser.t_user_role,
+          user_pec_code: peccode.trim()
+        });
+      } else {
+        setError('Invalid username or password or peccode or status. Please note that all information is case sensitive');
+      }
+    } catch (err) {
+      setError('An error occurred during login');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userid">
+              UserID
+            </label>
+            <input
+              id="userid"
+              type="text"
+              value={userid}
+              onChange={(e) => setUserID(e.target.value)}
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="peccode">
+              PEC Code
+            </label>
+            <select
+              id="peccode"
+              value={peccode}
+              onChange={(e) => setPECcode(e.target.value)}
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+              required
+            >
+              <option value="">Select PEC Code</option>
+              {pecCodes.map((code, index) => (
+                <option key={index} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-sky-500 text-white py-2 rounded hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+    function SidebarItem({ icon, text, onClick }) {
+      return (
+        <button
+          onClick={onClick}
+          className="flex items-center w-full px-6 py-3 hover:bg-slate-700 focus:outline-none"
+        >
+          <span className="mr-3">{icon}</span>
+          <span>{text}</span>
+        </button>
+      );
+    }
+
+    function Dashboard() {
+      return (
+        <div>
+          <p>Welcome to the Punjabi Education Center Management System. Select a module from the sidebar to get started.</p>
+        </div>
+      );
+    }
+
+    function CenterManagement({userInfo}) {
+        const [centers, setCenters] = React.useState([]);
+        const [banks, setBanks] = React.useState([]);
+        const [states, setStates] = React.useState([]);
+        const [mode, setMode] = React.useState('list'); // 'list', 'add', 'detail', 'edit'
+        const [selectedCenter, setSelectedCenter] = React.useState(null);
+        const [loading, setLoading] = React.useState(true);
+        const [error, setError] = React.useState(null);
+        const [successMessage, setSuccessMessage] = React.useState(null);
+
+       
+
+
+        // Form state
+        const [formData, setFormData] = React.useState({
+          pec_code: '',
+          pec_name:'',
+          pec_ros_no: '',
+          day_operate: '',
+          time_operate: '',
+          bank_name: '',
+          bank_acct_no: '',
+          add_line1: '',
+          add_line2: '',
+          add_postcode: '',
+          add_city: '',
+          add_state: ''
+        });
+
+        // Check if user is PA (PEC Admin)
+        const isPA = userInfo.user_role === "PA";
+
+        React.useEffect(() => {
+         if (userInfo) { 
+            fetchData();
+         }          
+        }, [userInfo]);
+
+        const fetchData = async () => {
+        try {
+            setLoading(true);
+            
+            let centersQuery = supabaseClient
+                .from('t_pec')
+                .select('*, t_address(*)');
+            
+            // If user is not PA, only fetch their own center
+            if (!isPA) {
+                centersQuery = centersQuery.eq('pec_code', userInfo.user_pec_code);
             }
-          };
+            
+            // Execute the query
+            const { data: centersData, error: centersError } = await centersQuery;
+            
+            if (centersError) throw centersError;
 
-          if (isLoading) {
-            return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+
+
+            // Fetch banks
+            const { data: banksData, error: banksError } = await supabaseClient
+              .from('t_bank_lookup')
+              .select('bank_name');
+              
+            if (banksError) throw banksError;
+            
+            // Fetch states
+            const { data: statesData, error: statesError } = await supabaseClient
+              .from('t_state_lookup')
+              .select('state_name');
+              
+            if (statesError) throw statesError;
+            
+            setCenters(centersData);
+            setBanks(banksData);
+            setStates(statesData);
+            setLoading(false);
+          } catch (error) {
+            setError(error.message);
+            setLoading(false);
           }
+        };
 
-          if (hasSupabaseError) {
-              return (
-                <div className="flex items-center justify-center min-h-screen bg-red-100 text-red-800 p-8 rounded-lg shadow-md">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold mb-4">Supabase Connection Error</h2>
-                        <p className="text-lg">
-                            Please replace the placeholder values for `SUPABASE_URL` and `SUPABASE_KEY`
-                            with your actual Supabase project credentials in the code.
-                        </p>
-                    </div>
-                </div>
-              );
+        const handleAddNew = () => {
+           // Only allow PA users to add new centers
+                if (!isPA) {
+                setError('Only Preschool Admin (PA) can add new centers');
+                return;
+            }
+            setMode('add');
+            setFormData({
+            pec_code: '',
+            pec_name:'',
+            pec_ros_no: '',
+            day_operate: '',
+            time_operate: '',
+            bank_name: '',
+            bank_acct_no: '',
+            add_line1: '',
+            add_line2: '',
+            add_postcode: '',
+            add_city: '',
+            add_state: ''
+          });
+        };
+
+        const handleViewDetails = (center) => {
+          setSelectedCenter(center);
+          setMode('detail');
+        };
+
+        const handleEdit = () => {
+         // Only allow PA users to edit any center, or users to edit their own center
+        if (!isPA && selectedCenter.pec_code !== userInfo.user_pec_code) {
+            setError('You can only edit your own center');
+            return;
+        }
+          setMode('edit');
+          setFormData({
+            pec_code: selectedCenter.pec_code,
+            pec_name: selectedCenter.pec_name,
+            pec_ros_no: selectedCenter.pec_ros_no,
+            day_operate: selectedCenter.day_operate,
+            time_operate: selectedCenter.time_operate,
+            bank_name: selectedCenter.bank_name,
+            bank_acct_no: selectedCenter.bank_acct_no,
+            add_line1: selectedCenter.t_address.add_line1,
+            add_line2: selectedCenter.t_address.add_line2,
+            add_postcode: selectedCenter.t_address.add_postcode,
+            add_city: selectedCenter.t_address.add_city,
+            add_state: selectedCenter.t_address.add_state
+          });
+        };
+
+        const handleCancel = () => {
+          setMode('list');
+          setSelectedCenter(null);
+          setError(null);
+          setSuccessMessage(null);
+        };
+
+        const handleInputChange = (e) => {
+          const { name, value } = e.target;
+          setFormData(prev => ({
+            ...prev,
+            [name]: value
+          }));
+        };
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setLoading(true);
+          
+          try {
+            if (mode === 'add') {
+              // First insert address
+              const { data: addressData, error: addressError } = await supabaseClient
+                .from('t_address')
+                .insert([{
+                  add_line1: formData.add_line1,
+                  add_line2: formData.add_line2,
+                  add_postcode: formData.add_postcode,
+                  add_city: formData.add_city,
+                  add_state: formData.add_state
+                }])
+                .select();
+                
+              if (addressError) throw addressError;
+              
+              // Then insert center with address ID
+              const { data: centerData, error: centerError } = await supabaseClient
+                .from('t_pec')
+                .insert([{
+                  pec_code: formData.pec_code,
+                  pec_name: formData.pec_name,
+                  pec_ros_no: formData.pec_ros_no,
+                  day_operate: formData.day_operate,
+                  time_operate: formData.time_operate,
+                  bank_name: formData.bank_name,
+                  bank_acct_no: formData.bank_acct_no,
+                  add_id: addressData[0].add_id
+                }])
+                .select();
+                
+              if (centerError) throw centerError;
+              
+              setSuccessMessage('Center added successfully!');
+            } else if (mode === 'edit') {
+              // Update address
+              const { error: addressError } = await supabaseClient
+                .from('t_address')
+                .update({
+                  add_line1: formData.add_line1,
+                  add_line2: formData.add_line2,
+                  add_postcode: formData.add_postcode,
+                  add_city: formData.add_city,
+                  add_state: formData.add_state
+                })
+                .eq('add_id', selectedCenter.t_address.add_id);
+                
+              if (addressError) throw addressError;
+              
+              // Update center
+              const { error: centerError } = await supabaseClient
+                .from('t_pec')
+                .update({
+                  pec_code: formData.pec_code,
+                  pec_name: formData.pec_name,
+                  pec_ros_no: formData.pec_ros_no,
+                  day_operate: formData.day_operate,
+                  time_operate: formData.time_operate,
+                  bank_name: formData.bank_name,
+                  bank_acct_no: formData.bank_acct_no
+                })
+                .eq('pec_code', selectedCenter.pec_code);
+                
+              if (centerError) throw centerError;
+              
+              setSuccessMessage('Center updated successfully!');
+            }
+            
+            await fetchData();
+            setMode('list');
+          } catch (error) {
+            setError(error.message);
+          } finally {
+            setLoading(false);
           }
+        };
 
+        const handleDelete = async () => {
+           // Only allow PA users to delete centers
+            if (!isPA) {
+            setError('Only PEC Admin (PA) can delete centers');
+            return;
+        }
+          
+           if (!window.confirm('Are you sure you want to delete this center?')) return;
+          
+          setLoading(true);
+          
+          try {
+            // First delete the center
+            const { error: centerError } = await supabaseClient
+              .from('t_pec')
+              .delete()
+              .eq('pec_code', selectedCenter.pec_code);
+              
+            if (centerError) throw centerError;
+            
+            // Then delete the address
+            const { error: addressError } = await supabaseClient
+              .from('t_address')
+              .delete()
+              .eq('add_id', selectedCenter.t_address.add_id);
+              
+            if (addressError) throw addressError;
+            
+            setSuccessMessage('Center deleted successfully!');
+            await fetchData();
+            setMode('list');
+          } catch (error) {
+            setError(error.message);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        if (loading && mode === 'list') {
+          return <div>Loading centers...</div>;
+        }
+
+        if (error) {
+          return <div className="text-red-500">Error: {error}</div>;
+        }
+
+        if (mode === 'add' || mode === 'edit') {
           return (
-            <div className="flex bg-gray-100 min-h-screen">
-              <>
-                {/* Sidebar for navigation */}
-                <aside
-                  className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-                >
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-indigo-600">PEC Admin</h2>
-                    <Button onClick={() => setIsSidebarOpen(false)} className="md:hidden">
-                      <X />
-                    </Button>
-                  </div>
-                  <nav className="mt-4 flex flex-col space-y-2 p-4">
-                    {userRole && pages[userRole]?.map((page) => (
-                      <button
-                        key={page.name}
-                        onClick={() => {
-                          setCurrentPage(page.name);
-                          setIsSidebarOpen(false);
-                        }}
-                        className={`flex items-center gap-2 p-2 rounded-md transition-colors ${
-                          currentPage === page.name ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-200'
-                        }`}
-                      >
-                        <page.icon />
-                        <span>{page.name}</span>
-                      </button>
-                    ))}
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 p-2 rounded-md transition-colors text-red-600 hover:bg-red-100"
-                    >
-                      <LogOut />
-                      <span>Logout</span>
-                    </button>
-                  </nav>
-                </aside>
-
-                {/* Main Content Area */}
-                <div className="flex-1 md:ml-64 p-4 transition-all">
-                  <header className="flex items-center justify-between p-4 bg-white shadow-md rounded-md mb-4">
-                    <Button onClick={() => setIsSidebarOpen(true)} className="md:hidden">
-                      <Menu />
-                    </Button>
-                    <h1 className="text-2xl font-bold text-gray-800">{currentPage}</h1>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Welcome, {userRole}</span>
-                    </div>
-                  </header>
-                  <main className="container mx-auto p-4 bg-white shadow-md rounded-md">
-                    {getPageContent()}
-                  </main>
+            <div className="h-full bg-slate-100 p-6 overflow-auto">
+              <button
+                onClick={handleCancel}
+                className="mb-4 bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800"
+              >
+                Back to List
+              </button>
+              
+              {successMessage && (
+                <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+                  {successMessage}
                 </div>
-              </>
+              )}
+              
+              <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+                <h2 className="text-xl font-bold mb-4">
+                  {mode === 'add' ? 'Add New Center' : 'Edit Center'}
+                </h2>
+                
+                <form onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+               <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">PEC Code</label>
+                   <input
+                     type="text"
+                     name="pec_code"
+                     value={formData.pec_code}
+                     onChange={handleInputChange}
+                     className={`w-full p-2 border rounded focus:ring-2 focus:ring-sky-500 ${
+                     mode === 'edit' ? 'bg-gray-100 cursor-not-allowed' : ''
+                      }`}
+                     readOnly={mode === 'edit'}
+                     required
+                    />
+                     {mode === 'edit' && (
+                        <p className="text-xs text-gray-500 mt-1">PEC Code cannot be changed in edit mode</p>
+                     )}
+                </div>
+
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">PEC Name</label>
+                      <input
+                        type="text"
+                        name="pec_name"
+                        value={formData.pec_name}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">ROS Number</label>
+                      <input
+                        type="text"
+                        name="pec_ros_no"
+                        value={formData.pec_ros_no}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Operating Days</label>
+                      <input
+                        type="text"
+                        name="day_operate"
+                        value={formData.day_operate}
+                        onChange={handleInputChange}
+                        placeholder="DD-MMM-YYYY"
+                        maxLength={11}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                          Format: DD-MMM-YYYY e.g 16-SEP-2020
+                     </p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Operating Time</label>
+                      <input
+                        type="text"
+                        name="time_operate"
+                        value={formData.time_operate}
+                        onChange={handleInputChange}
+                        placeholder="HH:MM"
+                        maxLength={5}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      />
+                       <p className="text-xs text-gray-500 mt-1">
+                          Format: HH:MM e.g 14:00
+                     </p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                      <select
+                        name="bank_name"
+                        value={formData.bank_name}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      >
+                        <option value="">Select Bank</option>
+                        {banks.map((bank, index) => (
+                          <option key={index} value={bank.bank_name}>{bank.bank_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Bank Account No</label>
+                      <input
+                        type="text"
+                        name="bank_acct_no"
+                        value={formData.bank_acct_no}
+                        onChange={handleInputChange}
+                        maxLength={50}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold mb-2">Address Information</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1</label>
+                      <input
+                        type="text"
+                        name="add_line1"
+                        value={formData.add_line1}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        maxLength={50}
+                        required
+                      />
+                       <div className="flex justify-between text-xs text-gray-500 mt-1">
+                           <span>Maximum 50 characters</span>
+                           <span>{formData.add_line1.length}/50</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                      <input
+                        type="text"
+                        name="add_line2"
+                        value={formData.add_line2}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        maxLength={50}
+                        required
+                      />
+                       <div className="flex justify-between text-xs text-gray-500 mt-1">
+                           <span>Maximum 50 characters</span>
+                           <span>{formData.add_line2.length}/50</span>
+                        </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
+                      <input
+                        type="text"
+                        name="add_postcode"
+                        value={formData.add_postcode}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        maxLength="6"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                      <input
+                        type="text"
+                        name="add_city"
+                        value={formData.add_city}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        maxLength={50}
+                        required
+                      />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                           <span>Maximum 50 characters</span>
+                           <span>{formData.add_city.length}/50</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                      <select
+                        name="add_state"
+                        value={formData.add_state}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      >
+                        <option value="">Select State</option>
+                        {states.map((state, index) => (
+                          <option key={index} value={state.state_name}>{state.state_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2 mt-6">
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="px-4 py-2 border rounded hover:bg-slate-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+                      disabled={loading}
+                    >
+                      {loading ? 'Saving...' : 'Save Center'}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           );
         }
 
-        // Dashboard Page
-        const Dashboard = ({ userRole, supabase }) => {
-          const [stats, setStats] = useState({ pecs: 0, students: 0, teachers: 0 });
-
-          useEffect(() => {
-            const fetchStats = async () => {
-              if (!supabase) return;
-              try {
-                const { count: pecCount } = await supabase.from('t_pec').select('*', { count: 'exact' });
-                const { count: studentCount } = await supabase.from('t_people').select('*', { count: 'exact' }).eq('PPL_CAT', 'Student');
-                const { count: teacherCount } = await supabase.from('t_people').select('*', { count: 'exact' }).eq('PPL_CAT', 'Teacher');
-
-                setStats({
-                  pecs: pecCount,
-                  students: studentCount,
-                  teachers: teacherCount,
-                });
-              } catch (error) {
-                console.error('Error fetching dashboard stats:', error);
-              }
-            };
-            fetchStats();
-          }, [supabase]);
-
+        if (mode === 'detail') {
           return (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Welcome to your {userRole} Dashboard!</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Total PECs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold">{stats.pecs}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Total Students</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold">{stats.students}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Total Teachers</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-4xl font-bold">{stats.teachers}</p>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-2">Recent Notifications</h3>
-                <ul className="bg-gray-50 p-4 rounded-md">
-                  <li className="p-2 border-b">Reminder: Attendance for this week is due by Friday.</li>
-                  <li className="p-2 border-b">New document "School Calendar 2025" has been uploaded.</li>
-                  <li className="p-2">Report cards for Q2 are now available.</li>
-                </ul>
+            <div>
+              <button
+                onClick={handleCancel}
+                className="mb-4 bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800"
+              >
+                Back to List
+              </button>
+              
+              {successMessage && (
+                <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+                  {successMessage}
+                </div>
+              )}
+              
+              <div className="bg-white p-6 rounded shadow mb-4">
+                <h2 className="text-xl font-bold mb-4">{selectedCenter.pec_name}</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <h3 className="font-semibold">PEC Information</h3>
+                    <p>PEC Code: {selectedCenter.pec_code}</p>
+                    <p>PEC Name: {selectedCenter.pec_name}</p>
+                    <p>ROS Number: {selectedCenter.pec_ros_no}</p>
+                    <p>Operating Days: {selectedCenter.day_operate}</p>
+                    <p>Operating Time: {selectedCenter.time_operate}</p>
+                    <p>Bank Name: {selectedCenter.bank_name}</p>
+                    <p>Bank Account No: {selectedCenter.bank_acct_no}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold">Address</h3>
+                    <p>{selectedCenter.t_address.add_line1}</p>
+                    <p>{selectedCenter.t_address.add_line2}</p>
+                    <p>{selectedCenter.t_address.add_postcode} {selectedCenter.t_address.add_city}</p>
+                    <p>{selectedCenter.t_address.add_state}</p>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleEdit}
+                    className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           );
-        };
+        }
 
-        // --- PEC Management Page with original date format display ---
-        const PECManagement = ({ supabase }) => {
-            const [pecs, setPecs] = useState([]);
-            const [banks, setBanks] = useState([]);
-            const [states, setStates] = useState([]);
-            const [selectedPec, setSelectedPec] = useState(null);
-            const [isLoading, setIsLoading] = useState(false);
-            const [isSubmitting, setIsSubmitting] = useState(false);
-            const [isEditing, setIsEditing] = useState(false);
-            const [view, setView] = useState('list'); // 'list', 'add', 'details'
-            const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-            const [message, setMessage] = useState('');
-
-            const initialPecData = {
-                pec_name: '',
-                ros_no: '',
-                day_operate: '',
-                time_operate: '',
-                bank_name: '',
-                bank_acct_no: '',
-                add_line1: '',
-                add_line2: '',
-                add_postcode: '',
-                add_city: '',
-                add_state: ''
-            };
-
-            const [formData, setFormData] = useState(initialPecData);
-
-            const fetchPecs = async () => {
-                setIsLoading(true);
-                setMessage('');
-                try {
-                    const { data, error } = await supabase
-                        .from('t_pec')
-                        .select(`
-                          add_id, pec_name, ros_no, day_operate, time_operate, bank_name, bank_acct_no,
-                          t_address ( add_line1, add_line2, add_postcode, add_city, add_state )
-                        `);
-                    
-                    if (error) throw error;
-                    setPecs(data);
-                } catch (error) {
-                    setMessage(`Error fetching PECs: ${error.message}`);
-                    console.error('Error fetching PECs:', error);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
+        return (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Education Centers</h2>
+              {isPA && (
+                    <button
+                        onClick={handleAddNew}
+                        className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+                    >
+                        Add New Center
+                    </button>)}
+            </div>
             
-            const fetchBanks = async () => {
-                try {
-                    const { data, error } = await supabase
-                        .from('t_bank')
-                        .select('bank_name');
-                    
-                    if (error) throw error;
-                    setBanks(data.map(bank => bank.bank_name));
-                } catch (error) {
-                    setMessage(`Error fetching banks: ${error.message}`);
-                    console.error('Error fetching banks:', error);
-                }
-            };
+            {successMessage && (
+              <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+                {successMessage}
+              </div>
+            )}
             
-            const fetchStates = async () => {
-                try {
-                    const { data, error } = await supabase
-                        .from('t_state')
-                        .select('state_name');
-                    
-                    if (error) throw error;
-                    setStates(data.map(state => state.state_name));
-                } catch (error) {
-                    setMessage(`Error fetching states: ${error.message}`);
-                    console.error('Error fetching states:', error);
-                }
-            };
+            {centers.length === 0 ? (
+              <p>No centers found. Contact PEC Admin to add new center</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {centers.map(center => (
+                  <div
+                    key={center.pec_code}
+                    onClick={() => handleViewDetails(center)}
+                    className="bg-white p-4 rounded shadow hover:shadow-md cursor-pointer"
+                  >
+                    <h3 className="font-bold">{center.pec_code}</h3>
+                    <p className="text-sm text-gray-600">{center.pec_name}</p>
+                    <p className="text-sm mt-2">
+                      {center.t_address.add_line1}, {center.t_address.add_postcode} {center.t_address.add_city}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
 
-            const handleChange = (e) => {
-                const { name, value } = e.target;
-                
-                // Postcode validation logic
-                if (name === 'add_postcode') {
-                    const sanitizedValue = value.replace(/[^0-9]/g, '').slice(0, 8);
-                    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
-                } 
-                // ROS No character limit logic
-                else if (name === 'ros_no') {
-                    setFormData(prev => ({ ...prev, [name]: value.slice(0, 20) }));
-                } else {
-                    setFormData(prev => ({ ...prev, [name]: value }));
-                }
-            };
+  function TeacherManagement({ userInfo }) {
+  const [teachers, setTeachers] = React.useState([]);
+  const [centers, setCenters] = React.useState([]);
+  const [states, setStates] = React.useState([]);
 
-            const addPec = async (e) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                setMessage('');
+  const [mode, setMode] = React.useState('list');
+  const [selectedTeacher, setSelectedTeacher] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+  const [successMessage, setSuccessMessage] = React.useState(null);
 
-                try {
-                    // 1. Insert into t_address
-                    const { data: addressData, error: addressError } = await supabase
-                        .from('t_address')
-                        .insert({
-                            add_line1: formData.add_line1,
-                            add_line2: formData.add_line2,
-                            add_postcode: formData.add_postcode,
-                            add_city: formData.add_city,
-                            add_state: formData.add_state
-                        })
-                        .select()
-                        .single();
-                    
-                    if (addressError) throw addressError;
+  // Separate form state for teacher and address
+  const [teacherForm, setTeacherForm] = React.useState({
+    tc_pec_code: '',
+    tc_ic: '',
+    tc_name: '',
+    tc_gender: '',
+    tc_tel_no: '',
+    tc_email: '',
+    tc_kelulusan: '',
+    tc_pengalaman: '',
+    tc_kdm: '',
+    tc_pekerjaan_skrng: '',
+    tc_status: 'active'
+  });
 
-                    // 2. Insert into t_pec using the new address id
-                    const { error: pecError } = await supabase
-                        .from('t_pec')
-                        .insert([{
-                            pec_name: formData.pec_name,
-                            ros_no: formData.ros_no,
-                            day_operate: formData.day_operate,
-                            time_operate: formData.time_operate,
-                            bank_name: formData.bank_name,
-                            bank_acct_no: formData.bank_acct_no,
-                            add_id: addressData.add_id
-                        }]);
-                    
-                    if (pecError) throw pecError;
+  const [addressForm, setAddressForm] = React.useState({
+    add_line1: '',
+    add_line2: '',
+    add_postcode: '',
+    add_city: '',
+    add_state: ''
+  });
 
-                    setMessage(`Successfully added PEC: ${formData.pec_name}`);
-                    // This is the key line to reset the form fields.
-                    setFormData(initialPecData);
-                    fetchPecs();
-                    setView('list');
-                } catch (error) {
-                    setMessage(`Error adding PEC: ${error.message}`);
-                    console.error('Error adding PEC:', error);
-                } finally {
-                    setIsSubmitting(false);
-                }
-            };
+  // Check if user is PA (PEC Admin)
+  const isPA = userInfo.user_role === "PA" || userInfo.user_role === "CA";
+
+  React.useEffect(() => {
+    if (userInfo) {
+      fetchData();
+    }
+  }, [userInfo]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch teachers with their address information
+      let teachersQuery = supabaseClient
+        .from('t_pec_teachers')
+        .select(`
+          *,
+          t_address (*)
+        `);
+      
+         
+      // fetch from logged in center
+      teachersQuery = teachersQuery.eq('tc_pec_code', userInfo.user_pec_code);
+
+      // Execute the query
+      const { data: teachersData, error: teachersError } = await teachersQuery;
+      
+      if (teachersError) throw teachersError;
+      
+      // Fetch centers for dropdown
+      const { data: centersData, error: centersError } = await supabaseClient
+        .from('t_pec')
+        .select('pec_code, pec_name');
+        
+      if (centersError) throw centersError;
+
+      // Fetch states
+      const { data: statesData, error: statesError } = await supabaseClient
+        .from('t_state_lookup')
+        .select('state_name');
+        
+      if (statesError) throw statesError;
+      
+      setTeachers(teachersData);
+      setCenters(centersData);
+      setStates(statesData);
+      
+      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleAddNew = () => {
+    setMode('add');
+    setTeacherForm({
+      tc_pec_code: '',
+      tc_name: '',
+      tc_ic: '',
+      tc_gender: '',
+      tc_tel_no: '',
+      tc_email: '',
+      tc_kelulusan: '',
+      tc_pengalaman: '',
+      tc_kdm: '',
+      tc_pekerjaan_skrng: '',
+      tc_status: 'active'
+    });
+    setAddressForm({
+      add_line1: '',
+      add_line2: '',
+      add_postcode: '',
+      add_city: '',
+      add_state: ''
+    });
+  };
+
+  const handleViewDetails = (teacher) => {
+    setSelectedTeacher(teacher);
+    setMode('detail');
+  };
+
+  const handleEdit = () => {
+    setMode('edit');
+    setTeacherForm({
+      tc_pec_code: selectedTeacher.tc_pec_code,
+      tc_name: selectedTeacher.tc_name,
+      tc_ic: selectedTeacher.tc_ic,
+      tc_gender: selectedTeacher.tc_gender || '',
+      tc_tel_no: selectedTeacher.tc_tel_no,
+      tc_email: selectedTeacher.tc_email,
+      tc_kelulusan: selectedTeacher.tc_kelulusan,
+      tc_pengalaman: selectedTeacher.tc_pengalaman,
+      tc_kdm: selectedTeacher.tc_kdm,
+      tc_pekerjaan_skrng: selectedTeacher.tc_pekerjaan_skrng,
+      tc_status: selectedTeacher.tc_status
+    });
+    
+    // Set address form if address exists
+    if (selectedTeacher.t_address) {
+      setAddressForm({
+        add_line1: selectedTeacher.t_address.add_line1 || '',
+        add_line2: selectedTeacher.t_address.add_line2 || '',
+        add_postcode: selectedTeacher.t_address.add_postcode || '',
+        add_city: selectedTeacher.t_address.add_city || '',
+        add_state: selectedTeacher.t_address.add_state || ''
+      });
+    } else {
+      setAddressForm({
+        add_line1: '',
+        add_line2: '',
+        add_postcode: '',
+        add_city: '',
+        add_state: ''
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    setMode('list');
+    setSelectedTeacher(null);
+    setError(null);
+    setSuccessMessage(null);
+  };
+
+  const handleTeacherInputChange = (e) => {
+    const { name, value } = e.target;
+    setTeacherForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleAddressInputChange = (e) => {
+    const { name, value } = e.target;
+    setAddressForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      if (mode === 'add') {
+        //Ensure teacherForm.tc_name has the value from the session as it is not entered by the user in the form
+        teacherForm.tc_pec_code = userInfo.user_pec_code
+        // First insert address
+        const { data: addressData, error: addressError } = await supabaseClient
+          .from('t_address')
+          .insert([addressForm])
+          .select();
+          
+        if (addressError) throw addressError;
+        
+        // Then insert teacher with the address ID
+        const { data, error } = await supabaseClient
+          .from('t_pec_teachers')
+          .insert([{
+            ...teacherForm,
+            add_id: addressData[0].add_id
+          }])
+          .select();
+          
+        if (error) throw error;
+        
+        setSuccessMessage('Teacher added successfully!');
+      } else if (mode === 'edit') {
+        // Update address if it exists, otherwise create it
+        if (selectedTeacher.add_id) {
+          // Update existing address
+          const { error: addressError } = await supabaseClient
+            .from('t_address')
+            .update(addressForm)
+            .eq('add_id', selectedTeacher.add_id);
             
-            const handleSelectPec = (pec) => {
-                setSelectedPec(pec);
-                setFormData({
-                    pec_name: pec.pec_name,
-                    ros_no: pec.ros_no,
-                    day_operate: pec.day_operate,
-                    time_operate: pec.time_operate,
-                    bank_name: pec.bank_name,
-                    bank_acct_no: pec.bank_acct_no,
-                    add_line1: pec.t_address?.add_line1 || '',
-                    add_line2: pec.t_address?.add_line2 || '',
-                    add_postcode: pec.t_address?.add_postcode || '',
-                    add_city: pec.t_address?.add_city || '',
-                    add_state: pec.t_address?.add_state || ''
-                });
-                setView('details');
-                setIsEditing(false);
-            };
-
-            const saveEdit = async (e) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                setMessage('');
-                try {
-                    // 1. Update t_address
-                    const { error: addressError } = await supabase
-                        .from('t_address')
-                        .update({
-                            add_line1: formData.add_line1,
-                            add_line2: formData.add_line2,
-                            add_postcode: formData.add_postcode,
-                            add_city: formData.add_city,
-                            add_state: formData.add_state
-                        })
-                        .eq('add_id', selectedPec.add_id);
-                    
-                    if (addressError) throw addressError;
-                    
-                    // 2. Update t_pec, using pec_name as the primary key
-                    const { error: pecError } = await supabase
-                        .from('t_pec')
-                        .update({
-                            pec_name: formData.pec_name,
-                            ros_no: formData.ros_no,
-                            day_operate: formData.day_operate,
-                            time_operate: formData.time_operate,
-                            bank_name: formData.bank_name,
-                            bank_acct_no: formData.bank_acct_no
-                        })
-                        .eq('pec_name', selectedPec.pec_name);
-                    
-                    if (pecError) throw pecError;
-
-                    setMessage(`Successfully updated PEC: ${formData.pec_name}`);
-                    setIsEditing(false);
-                    setSelectedPec(null); 
-                    fetchPecs(); 
-                    setView('list');
-                } catch (error) {
-                    setMessage(`Error updating PEC: ${error.message}`);
-                    console.error('Error updating PEC:', error);
-                } finally {
-                    setIsSubmitting(false);
-                }
-            };
-
-            const handleDelete = () => {
-                setIsConfirmingDelete(true);
-            };
-
-            const confirmDelete = async () => {
-                setIsSubmitting(true);
-                setMessage('');
-                try {
-                    // Delete t_pec first, using pec_name as the primary key
-                    const { error: pecError } = await supabase
-                        .from('t_pec')
-                        .delete()
-                        .eq('pec_name', selectedPec.pec_name);
-                    
-                    if (pecError) throw pecError;
-
-                    // Then delete the address
-                    if (selectedPec.add_id) {
-                        const { error: addressError } = await supabase
-                            .from('t_address')
-                            .delete()
-                            .eq('add_id', selectedPec.add_id);
-                        
-                        if (addressError) throw addressError;
-                    }
-                    
-                    setMessage(`Successfully deleted PEC: ${selectedPec.pec_name}`);
-                    setSelectedPec(null);
-                    setIsConfirmingDelete(false);
-                    fetchPecs();
-                    setView('list');
-                } catch (error) {
-                    setMessage(`Error deleting PEC: ${error.message}`);
-                    console.error('Error deleting PEC:', error);
-                } finally {
-                    setIsSubmitting(false);
-                }
-            };
-
-            const cancelDelete = () => {
-                setIsConfirmingDelete(false);
-            };
+          if (addressError) throw addressError;
+        } else {
+          // Create new address and link to teacher
+          const { data: addressData, error: addressError } = await supabaseClient
+            .from('t_address')
+            .insert([addressForm])
+            .select();
             
-            useEffect(() => {
-                if (supabase) {
-                    fetchPecs();
-                    fetchBanks();
-                    fetchStates();
-                }
-            }, [supabase]);
+          if (addressError) throw addressError;
+          
+          // Update teacher with new address ID
+          teacherForm.add_id = addressData[0].add_id;
+        }
+        
+        // Update teacher
+        const { error } = await supabaseClient
+          .from('t_pec_teachers')
+          .update(teacherForm)
+          .eq('tc_ic', selectedTeacher.tc_ic)
+          .eq('tc_pec_code',selectedTeacher.tc_pec_code)
+          
+        if (error) throw error;
+        
+        setSuccessMessage('Teacher updated successfully!');
+      }
+      
+      await fetchData();
+      setMode('list');
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            if (isLoading) {
-                return <div className="p-4 text-center">Loading PECs...</div>;
-            }
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this teacher?')) return;
+    
+    setLoading(true);
+    
+    try {
+      // First delete teacher
+      const { error } = await supabaseClient
+        .from('t_pec_teachers')
+        .delete()
+        .eq('tc_ic', selectedTeacher.tc_ic)
+        .eq('tc_pec_code',selectedTeacher.tc_pec_code);
+        
+      if (error) throw error;
+      
+      // Then delete the address if it exists and no other teachers reference it
+      if (selectedTeacher.add_id) {
+        // Check if other teachers use this address
+        const { data: otherTeachers, error: checkError } = await supabaseClient
+          .from('t_pec_teachers')
+          .select('tc_ic')
+          .eq('add_id', selectedTeacher.add_id);
+          
+        if (checkError) throw checkError;
+        
+        // Only delete address if no other teachers use it
+        if (!otherTeachers || otherTeachers.length === 0) {
+          const { error: addressError } = await supabaseClient
+            .from('t_address')
+            .delete()
+            .eq('add_id', selectedTeacher.add_id);
+            
+          if (addressError) throw addressError;
+        }
+      }
 
-            return (
-                <div className="flex flex-col h-full space-y-4">
-                    {message && (
-                        <div className="p-3 text-sm rounded-md bg-green-500 text-white">
-                            {message}
-                        </div>
-                    )}
-                    
-                    {view !== 'list' && (
-                        <Button onClick={() => { setView('list'); setFormData(initialPecData); }} className="w-fit mb-4">
-                            <ArrowLeft className="mr-2"/> Back to PEC List
-                        </Button>
-                    )}
+      setSuccessMessage('Teacher deleted successfully!');
+      await fetchData();
+      setMode('list');
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    {view === 'list' && (
-                        <Card>
-                            <CardHeader className="flex justify-between items-center">
-                                <CardTitle>Existing PECs</CardTitle>
-                                <Button onClick={() => setView('add')}>Add New PEC</Button>
-                            </CardHeader>
-                            <CardContent className="space-y-2 max-h-96 overflow-y-auto">
-                                {pecs.length > 0 ? (
-                                    pecs.map((pec) => (
-                                        <button
-                                            key={pec.pec_name}
-                                            onClick={() => handleSelectPec(pec)}
-                                            className="w-full p-3 text-left rounded-md transition-colors hover:bg-gray-100"
-                                        >
-                                            <p className="font-semibold">{pec.pec_name}</p>
-                                            <p className="text-xs text-gray-500">{pec.t_address?.add_city}, {pec.t_address?.add_state}</p>
-                                        </button>
-                                    ))
-                                ) : (
-                                    <p className="text-gray-500 text-center">No PECs found. Click "Add New PEC" to get started.</p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
-                    
-                    {view === 'add' && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Add New PEC</CardTitle>
-                                <CardDescription>Fill out the form below to add a new PEC.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={addPec} className="flex flex-col gap-4">
-                                    <Input name="pec_name" placeholder="PEC Name (Primary Key)" value={formData.pec_name} onChange={handleChange} required />
-                                    <Input name="ros_no" placeholder="ROS No (max 20 characters)" value={formData.ros_no} onChange={handleChange} maxLength="20" />
-                                    
-                                    <div className="flex space-x-2">
-                                        <div className="flex-1">
-                                            <label htmlFor="day_operate" className="block text-sm font-medium text-gray-700">Operating Day</label>
-                                            <Input type="date" id="day_operate" name="day_operate" value={formData.day_operate} onChange={handleChange} required />
-                                        </div>
-                                        <div className="flex-1">
-                                            <label htmlFor="time_operate" className="block text-sm font-medium text-gray-700">Operating Time</label>
-                                            <Input type="time" id="time_operate" name="time_operate" value={formData.time_operate} onChange={handleChange} required />
-                                        </div>
-                                    </div>
-                                    
-                                    <Input name="add_line1" placeholder="Address Line 1" value={formData.add_line1} onChange={handleChange} />
-                                    <Input name="add_line2" placeholder="Address Line 2" value={formData.add_line2} onChange={handleChange} />
-                                    <Input name="add_postcode" placeholder="Postcode (max 8 digits)" value={formData.add_postcode} onChange={handleChange} />
-                                    <Input name="add_city" placeholder="City" value={formData.add_city} onChange={handleChange} />
-                                    
-                                    <select
-                                        name="add_state"
-                                        value={formData.add_state}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        required
-                                    >
-                                        <option value="" disabled>Select a state</option>
-                                        {states.map((state, index) => (
-                                            <option key={index} value={state}>{state}</option>
-                                        ))}
-                                    </select>
-                                    
-                                    <select
-                                        name="bank_name"
-                                        value={formData.bank_name}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        required
-                                    >
-                                        <option value="" disabled>Select a bank</option>
-                                        {banks.map((bank, index) => (
-                                            <option key={index} value={bank}>{bank}</option>
-                                        ))}
-                                    </select>
-                                    
-                                    <Input name="bank_acct_no" placeholder="Bank Account Number" value={formData.bank_acct_no} onChange={handleChange} maxLength="25" />
-                                    <div className="flex gap-2">
-                                        <Button type="submit" disabled={isSubmitting}>
-                                            {isSubmitting ? <Spinner /> : 'Add PEC'}
-                                        </Button>
-                                        <Button type="button" onClick={() => setView('list')} className="bg-gray-500 hover:bg-gray-600">
-                                            Cancel
-                                        </Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    )}
+  if (loading && mode === 'list') {
+    return <div>Loading teachers...</div>;
+  }
 
-                    {view === 'details' && selectedPec && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{isEditing ? 'Edit PEC' : selectedPec.pec_name}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {isEditing ? (
-                                    <form onSubmit={saveEdit} className="space-y-4">
-                                        <Input name="pec_name" placeholder="PEC Name (Primary Key)" value={formData.pec_name} onChange={handleChange} required />
-                                        <Input name="ros_no" placeholder="ROS No (max 20 characters)" value={formData.ros_no} onChange={handleChange} maxLength="20" />
-                                        
-                                        <div className="flex space-x-2">
-                                            <div className="flex-1">
-                                                <label htmlFor="day_operate" className="block text-sm font-medium text-gray-700">Operating Day</label>
-                                                <Input type="date" id="day_operate" name="day_operate" value={formData.day_operate} onChange={handleChange} required />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label htmlFor="time_operate" className="block text-sm font-medium text-gray-700">Operating Time</label>
-                                                <Input type="time" id="time_operate" name="time_operate" value={formData.time_operate} onChange={handleChange} required />
-                                            </div>
-                                        </div>
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
 
-                                        <Input name="add_line1" placeholder="Address Line 1" value={formData.add_line1} onChange={handleChange} />
-                                        <Input name="add_line2" placeholder="Address Line 2" value={formData.add_line2} onChange={handleChange} />
-                                        <Input name="add_postcode" placeholder="Postcode (max 8 digits)" value={formData.add_postcode} onChange={handleChange} />
-                                        <Input name="add_city" placeholder="City" value={formData.add_city} onChange={handleChange} />
-                                        
-                                        <select
-                                            name="add_state"
-                                            value={formData.add_state}
-                                            onChange={handleChange}
-                                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            required
-                                        >
-                                            <option value="" disabled>Select a state</option>
-                                            {states.map((state, index) => (
-                                                <option key={index} value={state}>{state}</option>
-                                            ))}
-                                        </select>
-                                        
-                                        <select
-                                            name="bank_name"
-                                            value={formData.bank_name}
-                                            onChange={handleChange}
-                                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            required
-                                        >
-                                            <option value="" disabled>Select a bank</option>
-                                            {banks.map((bank, index) => (
-                                                <option key={index} value={bank}>{bank}</option>
-                                            ))}
-                                        </select>
-                                        
-                                        <Input name="bank_acct_no" placeholder="Bank Account Number" value={formData.bank_acct_no} onChange={handleChange} maxLength="25" />
-                                        <div className="flex gap-2">
-                                            <Button type="submit" disabled={isSubmitting} className="bg-green-500 hover:bg-green-600">
-                                                {isSubmitting ? <Spinner /> : 'Save'}
-                                            </Button>
-                                            <Button type="button" onClick={() => setIsEditing(false)} className="bg-gray-500 hover:bg-gray-600">Cancel</Button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <div className="space-y-4 text-sm">
-                                        <p><strong>PEC Name:</strong> {selectedPec.pec_name || 'N/A'}</p>
-                                        <p><strong>ROS No:</strong> {selectedPec.ros_no || 'N/A'}</p>
-                                        <p><strong>Operating Day:</strong> {selectedPec.day_operate || 'N/A'}</p>
-                                        <p><strong>Operating Time:</strong> {selectedPec.time_operate || 'N/A'}</p>
-                                        <p>
-                                            <strong>Address:</strong>
-                                            <br />
-                                            {selectedPec.t_address?.add_line1 || 'N/A'}
-                                            <br />
-                                            {selectedPec.t_address?.add_line2 || ''}
-                                            <br/>
-                                            {selectedPec.t_address?.add_postcode || ''} {selectedPec.t_address?.add_city || ''} {selectedPec.t_address?.add_state || ''}
-                                        </p>
-                                        <p><strong>Bank Name:</strong> {selectedPec.bank_name || 'N/A'}</p>
-                                        <p><strong>Bank Account No:</strong> {selectedPec.bank_acct_no || 'N/A'}</p>
-                                        <div className="flex gap-2">
-                                            <Button onClick={() => setIsEditing(true)} className="bg-yellow-500 hover:bg-yellow-600">Edit</Button>
-                                            <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
+  if (mode === 'add' || mode === 'edit') {
+    return (
+      <div className="h-full bg-slate-100 p-6 overflow-auto">
+        <button
+          onClick={handleCancel}
+          className="mb-4 bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800"
+        >
+          Back to List
+        </button>
+        
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+            {successMessage}
+          </div>
+        )}
+        
+        <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+          <h2 className="text-xl font-bold mb-4">
+            {mode === 'add' ? 'Add New Teacher' : 'Edit Teacher'}
+          </h2>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Center</label>
+                <input
+                  type="text"
+                  name="tc_pec_code"
+                  value={userInfo.user_pec_code}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500 bg-gray-100 cursor-not-allowed"
+                  required
+                  readOnly
 
-                    {/* Delete Confirmation Modal */}
-                    <Modal isOpen={isConfirmingDelete} onClose={cancelDelete}>
-                        <h3 className="text-lg font-bold">Confirm Deletion</h3>
-                        <p className="text-gray-600 my-4">
-                            Are you sure you want to delete **{selectedPec?.pec_name}**? This action cannot be undone.
-                        </p>
-                        <div className="flex justify-end gap-2">
-                            <Button onClick={cancelDelete} className="bg-gray-500 hover:bg-gray-600">Cancel</Button>
-                            <Button onClick={confirmDelete} disabled={isSubmitting} className="bg-red-500 hover:bg-red-600">
-                                {isSubmitting ? <Spinner /> : 'Delete'}
-                            </Button>
-                        </div>
-                    </Modal>
+                />
+                 <p className="text-xs text-gray-500 mt-1">PEC Code cannot be changed in edit mode</p>
                 </div>
-            );
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teacher Name</label>
+                <input
+                  type="text"
+                  name="tc_name"
+                  value={teacherForm.tc_name}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{teacherForm.tc_name.length}/50</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">IC Number</label>
+                <input
+                  type="text"
+                  name="tc_ic"
+                  value={teacherForm.tc_ic}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                   maxLength={20}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 20 characters</span>
+                  <span>{teacherForm.tc_ic.length}/20</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select
+                  name="tc_gender"
+                  value={teacherForm.tc_gender}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input
+                  type="text"
+                  name="tc_tel_no"
+                  value={teacherForm.tc_tel_no}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={20}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 20 characters</span>
+                  <span>{teacherForm.tc_tel_no.length}/20</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="tc_email"
+                  value={teacherForm.tc_email}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={100}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 100 characters</span>
+                  <span>{teacherForm.tc_email.length}/100</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
+                <input
+                  type="text"
+                  name="tc_kelulusan"
+                  value={teacherForm.tc_kelulusan}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={100}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 100 characters</span>
+                  <span>{teacherForm.tc_kelulusan.length}/100</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Experience</label>
+                <input
+                  type="text"
+                  name="tc_pengalaman"
+                  value={teacherForm.tc_pengalaman}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{teacherForm.tc_pengalaman.length}/50</span>
+                </div>
+              </div> 
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">KDM</label>
+                <input
+                  type="text"
+                  name="tc_kdm"
+                  value={teacherForm.tc_kdm}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={10}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 10 characters</span>
+                  <span>{teacherForm.tc_kdm.length}/10</span>
+                </div>
+              </div> 
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Job</label>
+                <input
+                  type="text"
+                  name="tc_pekerjaan_skrng"
+                  value={teacherForm.tc_pekerjaan_skrng}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={100}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 100 characters</span>
+                  <span>{teacherForm.tc_pekerjaan_skrng.length}/100</span>
+                </div>
+              </div> 
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  name="tc_status"
+                  value={teacherForm.tc_status}
+                  onChange={handleTeacherInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 className="text-lg font-semibold mb-2">Address Information</h3>
+              
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1</label>
+                <input
+                  type="text"
+                  name="add_line1"
+                  value={addressForm.add_line1}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength={50}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{addressForm.add_line1.length}/50</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                <input
+                  type="text"
+                  name="add_line2"
+                  value={addressForm.add_line2}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength={50}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{addressForm.add_line2.length}/50</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
+                <input
+                  type="text"
+                  name="add_postcode"
+                  value={addressForm.add_postcode}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength="6"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <input
+                  type="text"
+                  name="add_city"
+                  value={addressForm.add_city}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength={50}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{addressForm.add_city.length}/50</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                <select
+                  name="add_state"
+                  value={addressForm.add_state}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="">Select State</option>
+                  {states.map((state, index) => (
+                    <option key={index} value={state.state_name}>{state.state_name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 mt-6">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 border rounded hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+                disabled={loading}
+              >
+                {loading ? 'Saving...' : 'Save Teacher'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'detail') {
+    return (
+      <div>
+        <button
+          onClick={handleCancel}
+          className="mb-4 bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800"
+        >
+          Back to List
+        </button>
+        
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+            {successMessage}
+          </div>
+        )}
+        
+        <div className="bg-white p-6 rounded shadow mb-4">
+          <h2 className="text-xl font-bold mb-4">{selectedTeacher.tc_name}</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <h3 className="font-semibold">Teacher Information</h3>
+              <p>Center: {selectedTeacher.tc_pec_code}</p>
+              <p>IC Number: {selectedTeacher.tc_ic}</p>
+              <p>Gender: {selectedTeacher.tc_gender || '-'}</p>
+              <p>Phone: {selectedTeacher.tc_tel_no}</p>
+              <p>Email: {selectedTeacher.tc_email || '-'}</p>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold">Additional Info</h3>
+              <p>Qualification: {selectedTeacher.tc_kelulusan || '-'}</p>
+              <p>Experience: {selectedTeacher.tc_pengalaman || '-'}</p>
+              <p>KDM: {selectedTeacher.tc_kdm || '-'}</p>
+              <p>Current Job: {selectedTeacher.tc_pekerjaan_skrng || '-'}</p>
+              <p>Status: 
+                <span className={`inline-block px-2 py-1 rounded text-xs ml-2 ${
+                  selectedTeacher.tc_status === 'active' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {selectedTeacher.tc_status}
+                </span>
+              </p>
+            </div>
+          </div>
+          
+          {selectedTeacher.t_address && (
+            <div className="mb-4">
+              <h3 className="font-semibold">Address Information</h3>
+              <p>{selectedTeacher.t_address.add_line1}</p>
+              <p>{selectedTeacher.t_address.add_line2}</p>
+              <p>{selectedTeacher.t_address.add_postcode} {selectedTeacher.t_address.add_city}</p>
+              <p>{selectedTeacher.t_address.add_state}</p>
+            </div>
+          )}
+          
+          <div className="flex space-x-2">
+            <button
+              onClick={handleEdit}
+              className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Teachers</h2>
+         {isPA && (
+             
+            <button
+              onClick={handleAddNew}
+            className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+            >
+          Add New Teacher
+        </button>)}
+      </div>
+      
+      {successMessage && (
+        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+          {successMessage}
+        </div>
+      )}
+      
+      {teachers.length === 0 ? (
+        <p>No teachers found. Add a new teacher to get started.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white rounded shadow">
+            <thead>
+              <tr className="bg-slate-100">
+                <th className="py-2 px-4 text-left">Name</th>
+                <th className="py-2 px-4 text-left">Center</th>
+                <th className="py-2 px-4 text-left">IC Number</th>
+                <th className="py-2 px-4 text-left">Phone</th>
+                
+                <th className="py-2 px-4 text-left">Status</th>
+                {/* Apply conditional rendering for the View button based on the user's role */}
+                {isPA && (
+                  <th className="py-2 px-4 text-left">Actions</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {teachers.map(teacher => (
+                <tr key={teacher.tc_ic} className="border-t">
+                  <td className="py-2 px-4">{teacher.tc_name}</td>
+                  <td className="py-2 px-4">{teacher.tc_pec_code}</td>
+                  <td className="py-2 px-4">{teacher.tc_ic}</td>
+                  <td className="py-2 px-4">{teacher.tc_tel_no}</td>
+                  <td className="py-2 px-4">
+                    <span className={`inline-block px-2 py-1 rounded text-xs ${
+                      teacher.tc_status === 'active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {teacher.tc_status}
+                    </span>
+                  </td>
+                
+                   <td className="py-2 px-4">
+                          {/* Apply conditional rendering for the View button based on the user's role */}
+                          {isPA && (
+                            <button
+                              onClick={() => handleViewDetails(teacher)}
+                              className="text-indigo-500 hover:text-sky-700"
+                            >
+                              View
+                            </button>
+                            )}
+                        </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StudentManagement({ userInfo }) {
+      const [students, setStudents] = React.useState([]);
+      const [centers, setCenters] = React.useState([]);
+      const [mode, setMode] = React.useState('list');
+      const [selectedStudent, setSelectedStudent] = React.useState(null);
+      const [states, setStates] = React.useState([]);
+      const [classId, setClassId] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [error, setError] = React.useState(null);
+      const [successMessage, setSuccessMessage] = React.useState(null);
+
+  // Separate form state for student and address
+  const [studentForm, setStudentForm] = React.useState({
+    st_ic: '',
+    st_pec_code: '',
+    st_name:'',
+    st_pec_class_id: '',
+    st_gender: '',
+    st_dob:'',
+    st_tel_no: '',
+    st_email: '',
+    st_parent1_name: '',
+    st_parent1_relation: '',
+    st_parent1_job: '',
+    st_parent1_tel_no: '',
+    st_parent1_email: '',
+    st_parent2_name: '',
+    st_parent2_relation: '',
+    st_parent2_job: '',
+    st_parent2_tel_no: '',
+    st_parent2_email: '',
+    st_bil_isi_rumah:'',
+    st_pen_isi_rumah:'',
+    st_status: 'active'
+    });
+
+  const [addressForm, setAddressForm] = React.useState({
+    add_line1: '',
+    add_line2: '',
+    add_postcode: '',
+    add_city: '',
+    add_state: ''
+  });
+
+  // Check if user is PA (PEC Admin)
+  const isPA = userInfo.user_role === "PA" || userInfo.user_role === "CA";
+
+  React.useEffect(() => {
+    if (userInfo) {
+      fetchData();
+    }
+  }, [userInfo]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch students with their address information
+      let studentsQuery = supabaseClient
+        .from('t_pec_students')
+        .select(`
+          *,
+          t_address (*)
+        `);
+      
+         
+      // fetch from logged in center
+      studentsQuery = studentsQuery.eq('st_pec_code', userInfo.user_pec_code);
+
+      // Execute the query
+      const { data: studentsData, error: studentsError } = await studentsQuery;
+      
+      if (studentsError) throw studentsError;
+      
+      // Fetch centers for dropdown
+      const { data: centersData, error: centersError } = await supabaseClient
+        .from('t_pec')
+        .select('pec_code, pec_name');
+        
+      if (centersError) throw centersError;
+
+      // Fetch states
+      const { data: statesData, error: statesError } = await supabaseClient
+        .from('t_state_lookup')
+        .select('state_name');
+        
+      if (statesError) throw statesError;
+      
+      // Fetch classId - make sure we're getting the correct field
+      const { data: classIdData, error: classIdError } = await supabaseClient
+      .from('t_pec_class_lookup')
+      .select('pec_class_id, pec_class_name') // Get both ID and name
+      .order('pec_class_name');
+      
+
+      setStudents(studentsData);
+      setCenters(centersData);
+      setStates(statesData);
+      setClassId(classIdData);
+      
+      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleAddNew = () => {
+    setMode('add');
+    setStudentForm({
+      st_ic: '',
+      st_name:'',
+      st_pec_code: '',
+      st_pec_class_id: '',
+      st_gender: '',
+      st_dob:'',
+      st_tel_no: '',
+      st_email: '',
+      st_parent1_name: '',
+      st_parent1_relation: '',
+      st_parent1_job: '',
+      st_parent1_tel_no: '',
+      st_parent1_email: '',
+      st_parent2_name: '',
+      st_parent2_relation: '',
+      st_parent2_job: '',
+      st_parent2_tel_no: '',
+      st_parent2_email: '',
+      st_bil_isi_rumah:'',
+      st_pen_isi_rumah:'',
+      st_status: 'active'
+    });
+    setAddressForm({
+      add_line1: '',
+      add_line2: '',
+      add_postcode: '',
+      add_city: '',
+      add_state: ''
+    });
+  };
+
+  const handleViewDetails = (student) => {
+    setSelectedStudent(student);
+    setMode('detail');
+  };
+
+  const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setStudentForm(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      };
+
+  const handleEdit = () => {
+    setMode('edit');
+    setStudentForm({
+      st_ic: selectedStudent.st_ic,
+      st_name:selectedStudent.st_name,
+      st_pec_code: selectedStudent.st_pec_code,
+      st_pec_class_id: selectedStudent.st_pec_class_id,
+      st_gender: selectedStudent.st_gender || '',
+      st_dob :selectedStudent.st_dob,
+      st_tel_no: selectedStudent.st_tel_no,
+      st_email: selectedStudent.st_email,
+      st_parent1_name: selectedStudent.st_parent1_name,
+      st_parent1_relation: selectedStudent.st_parent1_relation,
+      st_parent1_job: selectedStudent.st_parent1_job,
+      st_parent1_tel_no: selectedStudent.st_parent1_tel_no,
+      st_parent1_email: selectedStudent.st_parent1_email,
+      st_parent2_name: selectedStudent.st_parent2_name,
+      st_parent2_relation: selectedStudent.st_parent2_relation,
+      st_parent2_job: selectedStudent.st_parent2_job,
+      st_parent2_tel_no: selectedStudent.st_parent2_tel_no,
+      st_parent2_email: selectedStudent.st_parent2_email,
+      st_bil_isi_rumah:selectedStudent.st_bil_isi_rumah,
+      st_pen_isi_rumah:selectedStudent.st_pen_isi_rumah,
+      st_status :selectedStudent.st_status
+    });
+    
+    // Set address form if address exists
+    if (selectedStudent.t_address) {
+      setAddressForm({
+        add_line1: selectedStudent.t_address.add_line1 || '',
+        add_line2: selectedStudent.t_address.add_line2 || '',
+        add_postcode: selectedStudent.t_address.add_postcode || '',
+        add_city: selectedStudent.t_address.add_city || '',
+        add_state: selectedStudent.t_address.add_state || ''
+      });
+    } else {
+      setAddressForm({
+        add_line1: '',
+        add_line2: '',
+        add_postcode: '',
+        add_city: '',
+        add_state: ''
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    setMode('list');
+    setSelectedStudent(null);
+    setError(null);
+    setSuccessMessage(null);
+  };
+
+  const handleStudentInputChange = (e) => {
+    const { name, value } = e.target;
+    setStudentForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleAddressInputChange = (e) => {
+    const { name, value } = e.target;
+    setAddressForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      if (mode === 'add') {
+        //Ensure StudentForm.tc_name has the value from the session as it is not entered by the user in the form
+        studentForm.st_pec_code = userInfo.user_pec_code
+        // First insert address
+        const { data: addressData, error: addressError } = await supabaseClient
+          .from('t_address')
+          .insert([addressForm])
+          .select();
+          
+        if (addressError) throw addressError;
+        
+        // Then insert student with the address ID
+        const { data, error } = await supabaseClient
+          .from('t_pec_students')
+          .insert([{
+            ...studentForm,
+            st_add_id: addressData[0].add_id
+          }])
+          .select();
+          
+        if (error) throw error;
+        
+        setSuccessMessage('Student added successfully!');
+      } else if (mode === 'edit') {
+        // Update address if it exists, otherwise create it
+        if (selectedStudent.st_add_id) {
+          // Update existing address
+          const { error: addressError } = await supabaseClient
+            .from('t_address')
+            .update(addressForm)
+            .eq('add_id', selectedStudent.st_add_id);
+            
+          if (addressError) throw addressError;
+        } else {
+          // Create new address and link to teacher
+          const { data: addressData, error: addressError } = await supabaseClient
+            .from('t_address')
+            .insert([addressForm])
+            .select();
+            
+          if (addressError) throw addressError;
+          
+          // Update student with new address ID
+          studentForm.add_id = addressData[0].add_id;
+        }
+        
+        // Update student
+        const { error } = await supabaseClient
+          .from('t_pec_students')
+          .update(studentForm)
+          .eq('st_ic', selectedStudent.st_ic)
+          .eq('st_pec_code',selectedStudent.st_pec_code)
+          
+        if (error) throw error;
+        
+        setSuccessMessage('Student updated successfully!');
+      }
+      
+      await fetchData();
+      setMode('list');
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this teacher?')) return;
+    
+    setLoading(true);
+    
+    try {
+      // First delete student
+      const { error } = await supabaseClient
+        .from('t_pec_students')
+        .delete()
+        .eq('st_ic', selectedStudent.st_ic);
+        
+        
+      if (error) throw error;
+      
+      // Then delete the address if it exists and no other students reference it
+      if (selectedStudent.st_add_id) {
+        // Check if other student use this address
+        const { data: otherStudents, error: checkError } = await supabaseClient
+          .from('t_pec_students')
+          .select('st_ic')
+          .eq('st_add_id', selectedStudent.st_add_id);
+          
+        if (checkError) throw checkError;
+        
+        // Only delete address if no other students use it
+        if (!otherStudents || otherStudents.length === 0) {
+          const { error: addressError } = await supabaseClient
+            .from('t_address')
+            .delete()
+            .eq('add_id', selectedStudent.add_id);
+            
+          if (addressError) throw addressError;
+        }
+      }
+
+      setSuccessMessage('Student deleted successfully!');
+      await fetchData();
+      setMode('list');
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && mode === 'list') {
+    return <div>Loading students...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
+
+  if (mode === 'add' || mode === 'edit') {
+    return (
+      <div className="h-full bg-slate-100 p-6 overflow-auto">
+        <button
+          onClick={handleCancel}
+          className="mb-4 bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800"
+        >
+          Back to List
+        </button>
+        
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+            {successMessage}
+          </div>
+        )}
+        
+        <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+          <h2 className="text-xl font-bold mb-4">
+            {mode === 'add' ? 'Add New Student' : 'Edit Student'}
+          </h2>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Center</label>
+                <input
+                  type="text"
+                  name="st_pec_code"
+                  value={userInfo.user_pec_code}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500 bg-gray-100 cursor-not-allowed"
+                  required
+                  readOnly
+
+                />
+                 <p className="text-xs text-gray-500 mt-1">PEC Code cannot be changed in edit mode</p>
+                </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
+                <input
+                  type="text"
+                  name="st_name"
+                  value={studentForm.st_name}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Maximum 50 characters</span>
+                    <span>{(studentForm.st_name || '').length}/50</span>
+                  </div>
+              </div>
+              
+                      <div>
+
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Class ID</label>
+                      <select
+                        name="st_pec_class_id"
+                        value={studentForm.st_pec_class_id}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      >
+                        <option value="">Select Class ID</option>
+                        {classId.map((classItem, index) => (
+                          <option key={index} value={classItem.pec_class_id}>
+                            {classItem.pec_class_name} ({classItem.pec_class_id})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                                   
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">IC Number</label>
+                <input
+                  type="text"
+                  name="st_ic"
+                  value={studentForm.st_ic}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                   maxLength={20}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 20 characters</span>
+                  <span>{(studentForm.st_ic || '').length}/20</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select
+                  name="st_gender"
+                  value={studentForm.st_gender}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+
+                <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Student DOB</label>
+                      <input
+                        type="text"
+                        name="st_dob"
+                        value={studentForm.st_dob}
+                        onChange={handleInputChange}
+                        placeholder="DD-MMM-YYYY"
+                        maxLength={11}
+                        className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                          Format: DD-MMM-YYYY e.g 16-JAN-2012
+                     </p>
+                    </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input
+                  type="text"
+                  name="st_tel_no"
+                  value={studentForm.st_tel_no}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={20}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 20 characters</span>
+                  <span>{studentForm.st_tel_no.length}/20</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="st_email"
+                  value={studentForm.st_email}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={100}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 100 characters</span>
+                  <span>{studentForm.st_email.length}/100</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 1 Name</label>
+                <input
+                  type="text"
+                  name="st_parent1_name"
+                  value={studentForm.st_parent1_name}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Maximum 50 characters</span>
+                    <span>{studentForm.st_parent1_name.length}/50</span>
+                  </div>
+              </div>
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 1 Relation</label>
+                <input
+                  type="text"
+                  name="st_parent1_relation"
+                  value={studentForm.st_parent1_relation}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Maximum 50 characters</span>
+                    <span>{studentForm.st_parent1_relation.length}/50</span>
+                  </div>
+              </div>
+
+
+                <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 1 Job</label>
+                <input
+                  type="text"
+                  name="st_parent1_job"
+                  value={studentForm.st_parent1_job}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Maximum 50 characters</span>
+                    <span>{studentForm.st_parent1_job.length}/50</span>
+                  </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 1 Phone Number</label>
+                <input
+                  type="text"
+                  name="st_parent1_tel_no"
+                  value={studentForm.st_parent1_tel_no}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={20}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 20 characters</span>
+                  <span>{studentForm.st_parent1_tel_no.length}/20</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 1 Email</label>
+                <input
+                  type="email"
+                  name="st_parent1_email"
+                  value={studentForm.st_parent1_email}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={100}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 100 characters</span>
+                  <span>{studentForm.st_parent1_email.length}/100</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 2 Name</label>
+                <input
+                  type="text"
+                  name="st_parent2_name"
+                  value={studentForm.st_parent2_name}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Maximum 50 characters</span>
+                    <span>{studentForm.st_parent2_name.length}/50</span>
+                  </div>
+              </div>
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 2 Relation</label>
+                <input
+                  type="text"
+                  name="st_parent2_relation"
+                  value={studentForm.st_parent2_relation}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Maximum 50 characters</span>
+                    <span>{studentForm.st_parent2_relation.length}/50</span>
+                  </div>
+              </div>
+
+
+                <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 2 Job</label>
+                <input
+                  type="text"
+                  name="st_parent2_job"
+                  value={studentForm.st_parent2_job}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={50}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Maximum 50 characters</span>
+                    <span>{studentForm.st_parent2_job.length}/50</span>
+                  </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 2 Phone Number</label>
+                <input
+                  type="text"
+                  name="st_parent2_tel_no"
+                  value={studentForm.st_parent2_tel_no}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  required
+                  maxLength={20}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 20 characters</span>
+                  <span>{studentForm.st_parent2_tel_no.length}/20</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent 2 Email</label>
+                <input
+                  type="email"
+                  name="st_parent2_email"
+                  value={studentForm.st_parent2_email}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                   maxLength={100}
+                />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 100 characters</span>
+                  <span>{studentForm.st_parent2_email.length}/100</span>
+                </div>
+              </div>
+              
+               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bilangan Isi Rumah</label>
+                <input
+                  type="text"
+                  name="st_bil_isi_rumah"
+                  value={studentForm.st_bil_isi_rumah}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength="6"
+                />
+              </div>
+             
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pendapatan Isi Rumah</label>
+                <input
+                  type="text"
+                  name="st_pen_isi_rumah"
+                  value={studentForm.st_pen_isi_rumah}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength="6"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  name="st_status"
+                  value={studentForm.st_status}
+                  onChange={handleStudentInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 className="text-lg font-semibold mb-2">Address Information</h3>
+              
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1</label>
+                <input
+                  type="text"
+                  name="add_line1"
+                  value={addressForm.add_line1}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength={50}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{addressForm.add_line1.length}/50</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                <input
+                  type="text"
+                  name="add_line2"
+                  value={addressForm.add_line2}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength={50}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{addressForm.add_line2.length}/50</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Postcode</label>
+                <input
+                  type="text"
+                  name="add_postcode"
+                  value={addressForm.add_postcode}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength="6"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <input
+                  type="text"
+                  name="add_city"
+                  value={addressForm.add_city}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                  maxLength={50}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Maximum 50 characters</span>
+                  <span>{addressForm.add_city.length}/50</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                <select
+                  name="add_state"
+                  value={addressForm.add_state}
+                  onChange={handleAddressInputChange}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="">Select State</option>
+                  {states.map((state, index) => (
+                    <option key={index} value={state.state_name}>{state.state_name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 mt-6">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 border rounded hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+                disabled={loading}
+              >
+                {loading ? 'Saving...' : 'Save Student'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'detail') {
+    return (
+      <div>
+        <button
+          onClick={handleCancel}
+          className="mb-4 bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800"
+        >
+          Back to List
+        </button>
+        
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+            {successMessage}
+          </div>
+        )}
+        
+        <div className="bg-white p-6 rounded shadow mb-4">
+          <h2 className="text-xl font-bold mb-4">{selectedStudent.tc_name}</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <h3 className="font-semibold">Student Information</h3>
+              <p>Center: {selectedStudent.st_pec_code}</p>
+              <p>Center: {selectedStudent.st_name}</p>
+              <p>IC Number: {selectedStudent.st_ic}</p>
+              <p>Gender: {selectedStudent.st_gender || '-'}</p>
+              <p>Phone: {selectedStudent.st_tel_no}</p>
+              <p>Email: {selectedStudent.st_email || '-'}</p>
+
+            </div>
+            
+            <div>
+              <h3 className="font-semibold">Additional Info</h3>
+              <p>Class ID: {selectedStudent.st_pec_class_id || '-'}</p>
+              <p>Parent 1 Name: {selectedStudent.st_parent1_name || '-'}</p>
+              <p>Parent 1 Phone: {selectedStudent.st_parent1_tel_no || '-'}</p>
+              <p>Parent 1 Email: {selectedStudent.st_parent1_email || '-'}</p>
+              <p>Parent 2 Name: {selectedStudent.st_parent2_name || '-'}</p>
+              <p>Parent 2 Phone: {selectedStudent.st_parent2_tel_no || '-'}</p>
+              <p>Parent 2 Email: {selectedStudent.st_parent2_email || '-'}</p>
+              <p>Status: 
+                <span className={`inline-block px-2 py-1 rounded text-xs ml-2 ${
+                  selectedStudent.st_status === 'active' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {selectedStudent.st_status}
+                </span>
+              </p>
+            </div>
+          </div>
+          
+          {selectedStudent.t_address && (
+            <div className="mb-4">
+              <h3 className="font-semibold">Address Information</h3>
+              <p>{selectedStudent.t_address.add_line1}</p>
+              <p>{selectedStudent.t_address.add_line2}</p>
+              <p>{selectedStudent.t_address.add_postcode} {selectedStudent.t_address.add_city}</p>
+              <p>{selectedStudent.t_address.add_state}</p>
+            </div>
+          )}
+          
+          <div className="flex space-x-2">
+            <button
+              onClick={handleEdit}
+              className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Student</h2>
+         {isPA && (
+             
+            <button
+              onClick={handleAddNew}
+            className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+            >
+          Add New Student
+        </button>)}
+      </div>
+      
+      {successMessage && (
+        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+          {successMessage}
+        </div>
+      )}
+      
+      {students.length === 0 ? (
+        <p>No students found. Add a new student to get started.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white rounded shadow">
+            <thead>
+              <tr className="bg-slate-100">
+                <th className="py-2 px-4 text-left">Name</th>
+                <th className="py-2 px-4 text-left">Center</th>
+                <th className="py-2 px-4 text-left">IC Number</th>
+                <th className="py-2 px-4 text-left">Phone</th>
+                
+                <th className="py-2 px-4 text-left">Status</th>
+                {/* Apply conditional rendering for the View button based on the user's role */}
+                {isPA && (
+                  <th className="py-2 px-4 text-left">Actions</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {students.map(student => (
+                <tr key={student.st_ic} className="border-t">
+                  <td className="py-2 px-4">{student.st_name}</td>
+                  <td className="py-2 px-4">{student.st_pec_code}</td>
+                  <td className="py-2 px-4">{student.st_ic}</td>
+                  <td className="py-2 px-4">{student.st_tel_no}</td>
+                  <td className="py-2 px-4">
+                    <span className={`inline-block px-2 py-1 rounded text-xs ${
+                      student.st_status === 'active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {student.st_status}
+                    </span>
+                  </td>
+                
+                   <td className="py-2 px-4">
+                          {/* Apply conditional rendering for the View button based on the user's role */}
+                          {isPA && (
+                            <button
+                              onClick={() => handleViewDetails(student)}
+                              className="text-indigo-500 hover:text-sky-700"
+                            >
+                              View
+                            </button>
+                            )}
+                        </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );      
+    }
+//
+function FinancialManagement({ userInfo }) {
+    const [transactions, setTransactions] = React.useState([]);
+    const [centers, setCenters] = React.useState([]);
+    const [accountTypes, setAccountTypes] = React.useState([]);
+    const [availableYears, setAvailableYears] = React.useState([]);
+    const [mode, setMode] = React.useState('list');
+    const [selectedTransaction, setSelectedTransaction] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState(null);
+    const [successMessage, setSuccessMessage] = React.useState(null);
+    const [selectedYear, setSelectedYear] = React.useState(null);
+    const [amountError, setAmountError] = React.useState('');
+
+    // Get user PEC code from userInfo
+    const userPecCode = userInfo?.user_pec_code || '';
+
+    // Form state
+    const [formData, setFormData] = React.useState({
+        ac_pec_code: userPecCode, // Pre-fill with user's PEC code
+        ac_acct_id: '',
+        ac_amount: '',
+        ac_comment: '',
+        ac_txdate: new Date().toISOString().split('T')[0] // Default to today
+    });
+
+    // Check if user is PA (PEC Admin)
+        const isPA = userInfo.user_role === "PA" || userInfo.user_role === "CA";
+    
+    React.useEffect(() => {
+        fetchData();
+    }, [selectedYear]);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            
+            // Build the query with filters
+            let transactionsQuery = supabaseClient
+                .from('t_account_pec')
+                .select('*')
+                .eq('ac_pec_code', userPecCode); // Filter by user's PEC code
+            
+            // Add year filter if specified
+            if (selectedYear) {
+                const startDate = `${selectedYear}-01-01`;
+                const endDate = `${selectedYear}-12-31`;
+                transactionsQuery = transactionsQuery
+                    .gte('ac_txdate', startDate)
+                    .lte('ac_txdate', endDate);
+            }
+            
+            // Fetch all data in parallel for better performance
+            const [
+                { data: transactionsData, error: transactionsError },
+                { data: centersData, error: centersError },
+                { data: accountTypesData, error: accountTypesError },
+                { data: yearsData, error: yearsError }
+            ] = await Promise.all([
+                transactionsQuery,
+                supabaseClient.from('t_pec').select('pec_code, pec_name'),
+                supabaseClient.from('t_account_lookup').select('acct_id, acct_desc, acct_type'),
+                supabaseClient.from('t_account_year_lookup').select('acct_year').order('acct_year', { ascending: false })
+            ]);
+            
+            if (transactionsError) throw transactionsError;
+            if (centersError) throw centersError;
+            if (accountTypesError) throw accountTypesError;
+            if (yearsError) throw yearsError;
+            
+            // Extract years from the response
+            const years = yearsData ? yearsData.map(item => item.acct_year) : [];
+            
+            // If we have years from the database, use them
+            const availableYearsList = years.length > 0 ? years : [];
+            setAvailableYears(availableYearsList);
+            
+            // Set the selected year to the first available year if not already set
+            if (availableYearsList.length > 0 && !selectedYear) {
+                setSelectedYear(availableYearsList[0]);
+            }
+            
+            // Manually join the data since Supabase can't detect the relationships
+            const transactionsWithDetails = (transactionsData || []).map(transaction => {
+                const center = (centersData || []).find(c => c.pec_code === transaction.ac_pec_code);
+                const account = (accountTypesData || []).find(a => a.acct_id === transaction.ac_acct_id);
+                
+                return {
+                    ...transaction,
+                    t_pec: center || { pec_code: '', pec_name: 'Unknown Center' },
+                    t_account_lookup: account || { acct_id: '', acct_desc: 'Unknown Account', acct_type: '' }
+                };
+            });
+            
+            setTransactions(transactionsWithDetails);
+            setCenters(centersData || []);
+            setAccountTypes(accountTypesData || []);
+            setLoading(false);
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
+        }
+    };
+
+    const handleAddNew = () => {
+        setMode('add');
+        setFormData({
+            ac_pec_code: userPecCode, // Pre-fill with user's PEC code
+            ac_acct_id: '',
+            ac_amount: '',
+            ac_comment: '',
+            ac_txdate: new Date().toISOString().split('T')[0]
+        });
+        setAmountError('');
+    };
+
+    const handleViewDetails = (transaction) => {
+        setSelectedTransaction(transaction);
+        setMode('detail');
+    };
+
+    const handleEdit = () => {
+        setMode('edit');
+        setFormData({
+            ac_pec_code: selectedTransaction.ac_pec_code,
+            ac_acct_id: selectedTransaction.ac_acct_id,
+            ac_amount: selectedTransaction.ac_amount,
+            ac_comment: selectedTransaction.ac_comment,
+            ac_txdate: selectedTransaction.ac_txdate || new Date().toISOString().split('T')[0]
+        });
+        setAmountError('');
+    };
+
+    const handleCancel = () => {
+        setMode('list');
+        setSelectedTransaction(null);
+        setError(null);
+        setSuccessMessage(null);
+        setAmountError('');
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+
+        if (name === 'ac_amount') {
+            // Allow only numbers and a single decimal point
+            let numericValue = value.replace(/[^0-9.]/g, '');
+            
+            // Ensure only one decimal point is present
+            const decimalCount = (numericValue.match(/\./g) || []).length;
+            if (decimalCount > 1) {
+                // If more than one decimal point, remove the extra ones
+                numericValue = numericValue.replace(/\.+$/, '');
+                const parts = numericValue.split('.');
+                numericValue = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Check if value has more than 8 digits (excluding decimal point)
+            const digitsOnly = numericValue.replace('.', '');
+            if (digitsOnly.length > 8) {
+                setAmountError('Amount cannot exceed 8 digits');
+                return;
+            } else {
+                setAmountError('');
+            }
+            
+            // Update the form data with the validated value
+            setFormData(prev => ({
+                ...prev,
+                [name]: numericValue
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+    };
+
+    const handleYearChange = (e) => {
+        const year = e.target.value ? parseInt(e.target.value) : null;
+        setSelectedYear(year);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Final validation for amount
+        if (formData.ac_amount.replace('.', '').length > 8) {
+            setAmountError('Amount cannot exceed 8 digits');
+            return;
+        }
+        
+        setLoading(true);
+        
+        try {
+            if (mode === 'add') {
+                const { data, error } = await supabaseClient
+                    .from('t_account_pec')
+                    .insert([{
+                        ac_pec_code: formData.ac_pec_code,
+                        ac_acct_id: parseInt(formData.ac_acct_id),
+                        ac_amount: parseFloat(formData.ac_amount),
+                        ac_comment: formData.ac_comment,
+                        ac_txdate: formData.ac_txdate
+                    }])
+                    .select();
+                    
+                if (error) throw error;
+                
+                setSuccessMessage('Transaction added successfully!');
+            } else if (mode === 'edit') {
+                const { error } = await supabaseClient
+                    .from('t_account_pec')
+                    .update({
+                        ac_pec_code: formData.ac_pec_code,
+                        ac_acct_id: parseInt(formData.ac_acct_id),
+                        ac_amount: parseFloat(formData.ac_amount),
+                        ac_comment: formData.ac_comment,
+                        ac_txdate: formData.ac_txdate
+                    })
+                    .eq('ac_pec_code', selectedTransaction.ac_pec_code)
+                    .eq('ac_acct_id', selectedTransaction.ac_acct_id);
+                    
+                if (error) throw error;
+                
+                setSuccessMessage('Transaction updated successfully!');
+            }
+            
+            await fetchData();
+            setMode('list');
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this transaction?')) return;
+        
+        setLoading(true);
+        
+        try {
+            const { error } = await supabaseClient
+                .from('t_account_pec')
+                .delete()
+                .eq('ac_pec_code', selectedTransaction.ac_pec_code)
+                .eq('ac_acct_id', selectedTransaction.ac_acct_id);
+                
+            if (error) throw error;
+            
+            setSuccessMessage('Transaction deleted successfully!');
+            await fetchData();
+            setMode('list');
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Calculate financial summary
+    const calculateSummary = () => {
+        let income = 0;
+        let expense = 0;
+        
+        transactions.forEach(transaction => {
+            const amount = parseFloat(transaction.ac_amount);
+            if (transaction.t_account_lookup?.acct_type === 'Income') {
+                income += amount;
+            } else if (transaction.t_account_lookup?.acct_type === 'Expense') {
+                expense += amount;
+            }
+        });
+        
+        const net = income - expense;
+        
+        return {
+            income: income.toFixed(2),
+            expense: expense.toFixed(2),
+            net: net.toFixed(2)
         };
+    };
 
-        // Placeholder components for other pages
-        const PecAdmins = () => <div className="p-4">PEC Administrator Management functionality goes here.</div>;
-        const ClassManagement = () => <div className="p-4">Class Management functionality goes here.</div>;
-        const StudentManagement = () => <div className="p-4">Student Management functionality goes here.</div>;
-        const TeacherManagement = () => <div className="p-4">Teacher Management functionality goes here.</div>;
-        const ParentManagement = () => <div className="p-4">Parent Management functionality goes here.</div>;
-        const FinanceManagement = () => <div className="p-4">Finance Management functionality goes here.</div>;
-        const ReportsAndAnalytics = () => <div className="p-4">Reports and Analytics functionality goes here.</div>;
-        const DocumentManagement = () => <div className="p-4">Document Management functionality goes here.</div>;
+    const summary = calculateSummary();
 
-        // Render the App component
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+    if (loading && mode === 'list') {
+        return (
+            <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading transactions...</p>
+                </div>
+            </div>
+        );
+    }
 
-    </script>
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <div className="bg-red-50 p-4 rounded-md max-w-md w-full">
+                    <div className="flex">
+                        <div className="flex-shrink-0">
+                            <span className="text-red-400 font-bold">X</span>
+                        </div>
+                        <div className="ml-3">
+                            <h3 className="text-sm font-medium text-red-800">Error</h3>
+                            <p className="text-sm text-red-700 mt-1">{error}</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setError(null);
+                            fetchData();
+                        }}
+                        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (mode === 'add' || mode === 'edit') {
+        return (
+            <div className="min-h-screen bg-gray-50 p-6">
+                <div className="max-w-4xl mx-auto">
+                    <button
+                        onClick={handleCancel}
+                        className="mb-6 flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                        <span className="mr-2">&larr;</span>
+                        Back to List
+                    </button>
+                    
+                    {successMessage && (
+                        <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-md border border-green-200">
+                            <div className="flex items-center">
+                                <span className="mr-2">✓</span>
+                                {successMessage}
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                            {mode === 'add' ? 'Add New Transaction' : 'Edit Transaction'}
+                        </h2>
+                        
+                        <form onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Center</label>
+                                    <select
+                                        name="ac_pec_code"
+                                        value={formData.ac_pec_code}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                        disabled // Disable since user can only use their own PEC code
+                                    >
+                                        <option value={userPecCode}>
+                                            {centers.find(c => c.pec_code === userPecCode)?.pec_name || userPecCode}
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+                                    <select
+                                        name="ac_acct_id"
+                                        value={formData.ac_acct_id}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select Account Type</option>
+                                        {accountTypes.map(type => (
+                                            <option key={type.acct_id} value={type.acct_id}>
+                                                {type.acct_desc} ({type.acct_type})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Transaction Date</label>
+                                    <input
+                                        type="date"
+                                        name="ac_txdate"
+                                        value={formData.ac_txdate}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Amount (RM)</label>
+                                    <input
+                                        type="text"
+                                        name="ac_amount"
+                                        value={formData.ac_amount}
+                                        onChange={handleInputChange}
+                                        className={`w-full p-3 border ${amountError ? 'border-red-500' : 'border-gray-300'} rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 amount-input`}
+                                        placeholder="Enter amount"
+                                        required
+                                        inputMode="decimal"
+                                        
+                                    />
+                                    {amountError && (
+                                        <p className="mt-1 text-sm text-red-600">{amountError}</p>
+                                    )}
+                                    <p className="mt-1 text-sm text-gray-500">Maximum 8 digits allowed</p>
+                                </div>
+                                
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Comment</label>
+                                    <textarea
+                                        name="ac_comment"
+                                        value={formData.ac_comment}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        rows="3"
+                                        placeholder="Add any additional comments here..."
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={handleCancel}
+                                    className="px-5 py-2.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                    disabled={loading || amountError}
+                                >
+                                    {loading ? (
+                                        <span className="flex items-center">
+                                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                                            Saving...
+                                        </span>
+                                    ) : (
+                                        'Save Transaction'
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (mode === 'detail') {
+        return (
+            <div className="min-h-screen bg-gray-50 p-6">
+                <div className="max-w-4xl mx-auto">
+                    <button
+                        onClick={handleCancel}
+                        className="mb-6 flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                        <span className="mr-2">&larr;</span>
+                        Back to List
+                    </button>
+                    
+                    {successMessage && (
+                        <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-md border border-green-200">
+                            <div className="flex items-center">
+                                <span className="mr-2">✓</span>
+                                {successMessage}
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h2 className="text-2xl font-bold text-gray-800">Transaction Details</h2>
+                        </div>
+                        
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Transaction Information</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500">Center:</span>
+                                            <p className="text-gray-900">{selectedTransaction.t_pec?.pec_name}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500">Account Type:</span>
+                                            <p className="text-gray-900">{selectedTransaction.t_account_lookup?.acct_desc} ({selectedTransaction.t_account_lookup?.acct_type})</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500">Transaction Date:</span>
+                                            <p className="text-gray-900">{selectedTransaction.ac_txdate ? new Date(selectedTransaction.ac_txdate).toLocaleDateString() : 'Not specified'}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-sm font-medium text-gray-500">Amount:</span>
+                                            <p className={`font-medium ${
+                                                selectedTransaction.t_account_lookup?.acct_type === 'Income' ? 'text-green-600' : 
+                                                selectedTransaction.t_account_lookup?.acct_type === 'Expense' ? 'text-red-600' : 'text-gray-900'
+                                            }`}>
+                                                RM {parseFloat(selectedTransaction.ac_amount).toFixed(2)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Additional Information</h3>
+                                    <div>
+                                        <span className="text-sm font-medium text-gray-500">Comment:</span>
+                                        <p className="text-gray-900 mt-1 bg-gray-50 p-3 rounded-md">{selectedTransaction.ac_comment || 'No comments provided'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex space-x-3 pt-4 border-t border-gray-200">
+                                <button
+                                    onClick={handleEdit}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Edit Transaction
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                >
+                                    Delete Transaction
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">Financial Transactions</h2>
+                     {isPA && (
+                    <button
+                        onClick={handleAddNew}
+                        className="px-4 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
+                    >
+                        <span className="mr-2">+</span>
+                        Add New Transaction
+                    </button>)}
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <select
+                                value={selectedYear || ''}
+                                onChange={handleYearChange}
+                                className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="">All Years</option>
+                                {availableYears.map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-4 text-sm text-gray-500">
+                        {selectedYear ? (
+                            <span>Showing data for {selectedYear} and your center</span>
+                        ) : (
+                            <span>Showing all years of data for your center</span>
+                        )}
+                    </div>
+                </div>
+                
+                {successMessage && (
+                    <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-md border border-green-200">
+                        <div className="flex items-center">
+                            <span className="mr-2">✓</span>
+                            {successMessage}
+                        </div>
+                    </div>
+                )}
+                
+                {/* Financial Summary Section */}
+                {transactions.length > 0 && (
+                    <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+                        <h3 className="text-lg font-medium text-gray-700 mb-4">Financial Summary</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="p-4 bg-green-50 rounded-lg">
+                                <div className="text-sm font-medium text-green-800">Total Income</div>
+                                <div className="text-2xl font-bold text-green-600">RM {summary.income}</div>
+                            </div>
+                            <div className="p-4 bg-red-50 rounded-lg">
+                                <div className="text-sm font-medium text-red-800">Total Expense</div>
+                                <div className="text-2xl font-bold text-red-600">RM {summary.expense}</div>
+                            </div>
+                            <div className={`p-4 rounded-lg ${
+                                parseFloat(summary.net) >= 0 ? 'bg-green-50' : 'bg-red-50'
+                            }`}>
+                                <div className="text-sm font-medium text-gray-800">Net Amount</div>
+                                <div className={`text-2xl font-bold ${
+                                    parseFloat(summary.net) >= 0 ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                    RM {summary.net}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {transactions.length === 0 ? (
+                    <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                        <div className="text-gray-300 text-4xl mx-auto mb-4">📄</div>
+                        <h3 className="mt-4 text-lg font-medium text-gray-900">
+                            {selectedYear ? `No transactions found for ${selectedYear}` : 'No transactions found'}
+                        </h3>
+                        <p className="mt-1 text-gray-500">Get started by creating a new transaction.</p>
+                        <div className="mt-6">
+                            {isPA && (
+                                <button
+                                    onClick={handleAddNew}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                >
+                                    <span className="mr-2">+</span>
+                                    Add Transaction
+                                </button>)}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                            <h3 className="text-lg font-medium text-gray-700">
+                                {selectedYear ? `Transactions for ${selectedYear}` : 'All Transactions'}
+                            </h3>
+                            <span className="text-sm text-gray-500">
+                                {transactions.length} transaction{transactions.length !== 1 ? 's' : ''} found
+                            </span>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Center</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Type</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount (RM)</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {transactions.map(transaction => (
+                                        <tr key={`${transaction.ac_pec_code}-${transaction.ac_acct_id}`} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">{transaction.t_pec?.pec_name}</div>
+                                                <div className="text-sm text-gray-500">{transaction.ac_pec_code}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">{transaction.t_account_lookup?.acct_desc}</div>
+                                                <div className="text-sm text-gray-500">{transaction.t_account_lookup?.acct_type}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {transaction.ac_txdate ? new Date(transaction.ac_txdate).toLocaleDateString() : 'Not specified'}
+                                            </td>
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                                                transaction.t_account_lookup?.acct_type === 'Income' ? 'text-green-600' : 
+                                                transaction.t_account_lookup?.acct_type === 'Expense' ? 'text-red-600' : 'text-gray-900'
+                                            }`}>
+                                                RM {parseFloat(transaction.ac_amount).toFixed(2)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button
+                                                    onClick={() => handleViewDetails(transaction)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                >
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+//
+   function ReportsAnalytics({ userInfo }) {
+  const [reportType, setReportType] = React.useState('');
+  const [pecFilter, setPecFilter] = React.useState('');
+  const [classFilter, setClassFilter] = React.useState('');
+  const [centers, setCenters] = React.useState([]);
+  const [classes, setClasses] = React.useState([]);
+  const [reportData, setReportData] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
+
+  // Check if user is PA (PEC Admin)
+  const isPA = userInfo.user_role === "PA";
+  
+  // Get user PEC code from userInfo
+  const userPecCode = userInfo?.user_pec_code || '';
+
+  // Fetch centers and classes for filters (using REST - simple operations)
+  React.useEffect(() => {
+    fetchFilters();
+  }, []);
+
+  // Set default PEC filter to user's PEC code when centers are loaded
+  React.useEffect(() => {
+    if (centers.length > 0 && userPecCode && !pecFilter) {
+      // Only set default for non-PA users, PA users should start with "All Centers"
+      if (!isPA) {
+        setPecFilter(userPecCode);
+      }
+    }
+  }, [centers, userPecCode, pecFilter, isPA]);
+
+  const fetchFilters = async () => {
+    try {
+      // Fetch centers - simple REST call ✅
+      const { data: centersData, error: centersError } = await supabaseClient
+        .from('t_pec')
+        .select('pec_code, pec_name');
+      
+      if (centersError) throw centersError;
+      setCenters(centersData);
+
+      // Fetch unique classes - simple REST call ✅
+      const { data: classesData, error: classesError } = await supabaseClient
+        .from('t_pec_students')
+        .select('st_pec_class_id');
+        
+      if (classesError) throw classesError;
+      const uniqueClasses = [...new Set(classesData.map(item => item.st_pec_class_id))].filter(Boolean);
+      setClasses(uniqueClasses);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handlePecFilterChange = (e) => {
+    setPecFilter(e.target.value);
+  };
+
+  const generateReport = async () => {
+    if (!reportType) {
+      setError('Please select a report type');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      let result = null;
+
+      switch (reportType) {
+        case 'student-detailed':
+          // Student detailed report with address join
+          result = await supabaseClient
+            .rpc('get_student_detailed', {
+              pec_filter: pecFilter || null,
+              class_filter: classFilter || null
+            });
+          break;
+
+        case 'student-summary':
+          // Student summary report
+          result = await supabaseClient
+            .rpc('get_student_summary', {
+              pec_filter: pecFilter || null,
+              class_filter: classFilter || null
+            });
+          break;
+
+        case 'income-statement':
+          // Income statement report
+          result = await supabaseClient
+            .rpc('get_income_statement', {
+              pec_filter: pecFilter || null
+            });
+          break;
+
+        case 'teacher-records':
+          // Teacher records with address join
+          result = await supabaseClient
+            .rpc('get_teacher_records', {
+              pec_filter: pecFilter || null
+            });
+          break;
+
+        case 'pec-records':
+          // PEC records with address join
+          result = await supabaseClient
+            .rpc('get_pec_records', {
+              pec_filter: pecFilter || null
+            });
+          break;
+
+        default:
+          throw new Error('Invalid report type');
+      }
+
+      // Handle RPC response
+      const data = result.data;
+      const error = result.error;
+
+      if (error) {
+        if (error.code === 'PGRST301') {
+          throw new Error('Report function not found. Please contact administrator.');
+        }
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        setError('No data found for the selected filters');
+        setReportData([]);
+      } else {
+        setReportData(data);
+      }
+      
+    } catch (error) {
+      setError(`Report generation failed: ${error.message}`);
+      setReportData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportToCSV = () => {
+    if (reportData.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    
+    // Get CSV content
+    const headers = Object.keys(reportData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...reportData.map(row => 
+        headers.map(header => {
+          const value = row[header];
+          // Handle values that might contain commas
+          return typeof value === 'string' && value.includes(',') 
+            ? `"${value}"` 
+            : value;
+        }).join(',')
+      )
+    ].join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${reportType}-report-${new Date().getTime()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const getReportTypeName = (type) => {
+    const names = {
+      'student-detailed': 'Student & Class Record - Detailed',
+      'student-summary': 'Student & Class Record - Summary',
+      'income-statement': 'Statement of Income',
+      'teacher-records': 'Teacher Records',
+      'pec-records': 'PEC Records'
+    };
+    return names[type] || type;
+  };
+
+  const clearFilters = () => {
+    // For PA users, clear to empty string (shows "All Centers")
+    // For non-PA users, reset to their PEC code
+    setPecFilter(isPA ? '' : userPecCode);
+    setClassFilter('');
+    setReportData([]);
+    setError(null);
+  };
+
+  return (
+    <div className="p-6 bg-white rounded shadow">
+      <h2 className="text-xl font-bold mb-4">Reports & Analytics</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Report Type
+          </label>
+          <select
+            value={reportType}
+            onChange={(e) => {
+              setReportType(e.target.value);
+              setReportData([]);
+              setError(null);
+            }}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+          >
+            <option value="">Select Report Type</option>
+            <option value="student-detailed">Student & Class Record - Detailed</option>
+            <option value="student-summary">Student & Class Record - Summary</option>
+            <option value="income-statement">Statement of Income</option>
+            <option value="teacher-records">Teacher Records</option>
+            <option value="pec-records">PEC Records</option>
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            PEC Filter
+          </label>
+          <select
+            value={pecFilter}
+            onChange={handlePecFilterChange}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+            disabled={!isPA} // Disable if user is not PA
+          >
+            {!isPA ? (
+              // For non-PA users, show only their own PEC center
+              <option value={userPecCode}>
+                {centers.find(c => c.pec_code === userPecCode)?.pec_name || userPecCode}
+              </option>
+            ) : (
+              // For PA users, show all centers with "All Centers" option
+              <>
+                <option value="">All Centers</option>
+                {centers.map(center => (
+                  <option key={center.pec_code} value={center.pec_code}>
+                    {center.pec_code} - {center.pec_name}
+                  </option>
+                ))}
+              </>
+            )}
+          </select>
+          {!isPA && (
+            <p className="mt-1 text-sm text-gray-500">
+              You can only view reports for your assigned center: {centers.find(c => c.pec_code === userPecCode)?.pec_name || userPecCode}
+            </p>
+          )}
+        </div>
+        
+        {(reportType === 'student-detailed' || reportType === 'student-summary') && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Class Filter
+            </label>
+            <select
+              value={classFilter}
+              onChange={(e) => setClassFilter(e.target.value)}
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
+            >
+              <option value="">All Classes</option>
+              {classes.map(cls => (
+                <option key={cls} value={cls}>
+                  {cls}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex space-x-4 mb-6">
+        <button
+          onClick={generateReport}
+          disabled={loading || !reportType}
+          className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 disabled:bg-sky-300 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Generating...' : 'Generate Report'}
+        </button>
+        
+        <button
+          onClick={clearFilters}
+          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+        >
+          Clear Filters
+        </button>
+        
+        {reportData.length > 0 && (
+          <button
+            onClick={exportToCSV}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Export to CSV
+          </button>
+        )}
+      </div>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+      
+      {reportData.length > 0 ? (
+        <div className="overflow-x-auto">
+          <div className="mb-2 text-sm text-gray-500">
+            Showing {reportData.length} records
+          </div>
+          <table className="min-w-full bg-white rounded shadow">
+            <thead>
+              <tr className="bg-slate-100">
+                {Object.keys(reportData[0]).map(key => (
+                  <th key={key} className="py-2 px-4 text-left">
+                    {key.replace(/_/g, ' ').toUpperCase()}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {reportData.map((row, index) => (
+                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                  {Object.values(row).map((value, i) => (
+                    <td key={i} className="py-2 px-4 border-t">
+                      {value !== null && value !== undefined ? value.toString() : ''}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        !loading && <p className="text-gray-500">No data available. Generate a report to view data.</p>
+      )}
+    </div>
+  );
+}
+    function DocumentManagement() {
+      return (
+        <div>
+          <h2 className="text-xl font-bold mb-4">Document Management</h2>
+          <p>This section will manage all documents related to the education centers.</p>
+        </div>
+      );
+    }
+
+    function Logout() {
+      return (
+        <div>
+          <h2 className="text-xl font-bold mb-4">Logout</h2>
+          <p>You have been logged out successfully.</p>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
 </body>
 </html>
-
