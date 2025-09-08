@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PEC System r0809-0955</title>
+  <title>PEC System r0809-1737</title>
   <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100">
+<body>
   <div id="root"></div>
 
   <script type="text/babel">
@@ -896,7 +895,7 @@ function Login({ onLogin }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center bg-cover bg-center backdrop-blur-sm" style={{backgroundImage: "url('PEC_bg.png')"}}>
         <h2 className="text-2xl font-bold mb-6 text-center">PEC System Login</h2>
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
