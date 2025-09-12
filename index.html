@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PEC System r1209-1206</title>
+  <title>PEC System r1209-1226</title>
   <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -904,9 +904,9 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-cover bg-no-repeat backdrop-blur-sm" style={{backgroundImage: "url('PEC_bg.png')", backgroundPosition: 'center 30%'}}>
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">PEC System Login</h2>
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
             {error}
