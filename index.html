@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charse
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PEC System r0809-2147</title>
+  <title>PEC System r1209-1206</title>
   <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-slate-100">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -24,6 +24,8 @@ function App() {
   const [currentPage, setCurrentPage] = React.useState('Dashboard');
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [userInfo, setUserInfo] = React.useState(null);
+  const [forceRefresh, setForceRefresh] = React.useState(0); // Add this line
+
 
   // Check if user is already logged in (from localStorage)
   React.useEffect(() => {
@@ -53,8 +55,16 @@ function App() {
   };
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setSidebarOpen(false); // Close sidebar on mobile when a page is selected
+    //setCurrentPage(page);
+    //setSidebarOpen(false); // Close sidebar on mobile when a page is selected
+
+    if (currentPage === page) {
+      setForceRefresh(prev => prev + 1);
+    } else {
+      setCurrentPage(page);
+    }
+    setSidebarOpen(false);
+
   };
 
   const renderPage = () => {
@@ -64,26 +74,26 @@ function App() {
     
     switch(currentPage) {
       case 'Dashboard':
-        return <Dashboard userInfo={userInfo} />;
+        return <Dashboard userInfo={userInfo} key={`dashboard-${forceRefresh}`} />;
       case 'User Administration':
-        return <UserAdministration userInfo={userInfo} />;
+        return <UserAdministration userInfo={userInfo} key={`user-admin-${forceRefresh}`} />;
       case 'Center Management':
-        return <CenterManagement userInfo={userInfo} />;
+        return <CenterManagement userInfo={userInfo} key={`center-mgmt-${forceRefresh}`} />;
       case 'Center Board Management':
-        return <CenterBoardManagement userInfo={userInfo} />;
+        return <CenterBoardManagement userInfo={userInfo} key={`board-mgmt-${forceRefresh}`} />;
       case 'Teacher Management':
-        return <TeacherManagement userInfo={userInfo} />;
+        return <TeacherManagement userInfo={userInfo} key={`teacher-mgmt-${forceRefresh}`} />;
       case 'Student Management':
-        return <StudentManagement userInfo={userInfo}/>;
+        return <StudentManagement userInfo={userInfo} key={`student-mgmt-${forceRefresh}`} />;
       case 'Financial Management':
-        return <FinancialManagement userInfo={userInfo}/>;
+        return <FinancialManagement userInfo={userInfo} key={`financial-mgmt-${forceRefresh}`} />;
       case 'Reports & Analytics':
-        return <ReportsAnalytics userInfo={userInfo}/>;
+        return <ReportsAnalytics userInfo={userInfo} key={`reports-${forceRefresh}`} />;
       case 'Logout':
         handleLogout();
-        return <Logout />;
+        return <Logout key={`logout-${forceRefresh}`} />;
       default:
-        return <Dashboard />;
+        return <Dashboard key={`default-${forceRefresh}`} />;
     }
   };
 
@@ -894,9 +904,9 @@ function Login({ onLogin }) {
   };
 
   return (
-     <div className="min-h-screen flex items-center justify-center bg-cover bg-no-repeat backdrop-blur-sm" style={{backgroundImage: "url('PEC_bg.png')", backgroundPosition: 'center 30%'}}>
-     <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">PEC System Login</h2>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
             {error}
@@ -2034,13 +2044,13 @@ function CenterManagement({userInfo}) {
                         name="day_operate"
                         value={centerForm.day_operate}
                         onChange={handleInputChange}
-                        placeholder="DD-MMM-YYYY"
+                        placeholder="DD-MM-YYYY"
                         maxLength={11}
                         className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
                         required
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                          Format: DD-MMM-YYYY e.g 16-SEP-2020
+                          Format: DD-MM-YYYY e.g 16-09-2020
                      </p>
                     </div>
                     
@@ -3062,6 +3072,8 @@ function StudentManagement({ userInfo }) {
       const [loading, setLoading] = React.useState(true);
       const [error, setError] = React.useState(null);
       const [successMessage, setSuccessMessage] = React.useState(null);
+      const [selectedClassFilter, setSelectedClassFilter] = React.useState(''); // Add class filter state
+
 
   // Separate form state for student and address
   const [studentForm, setStudentForm] = React.useState({
@@ -3156,8 +3168,14 @@ function StudentManagement({ userInfo }) {
     } catch (error) {
       setError(error.message);
       setLoading(false);
+
     }
   };
+
+  // Filter students by selected class
+  const filteredStudents = selectedClassFilter
+    ? students.filter(student => student.st_pec_class_id === selectedClassFilter)
+    : students;
 
   const handleAddNew = () => {
     setMode('add');
@@ -3511,13 +3529,13 @@ function StudentManagement({ userInfo }) {
                         name="st_dob"
                         value={studentForm.st_dob}
                         onChange={handleInputChange}
-                        placeholder="DD-MMM-YYYY"
+                        placeholder="DD-MM-YYYY"
                         maxLength={11}
                         className="w-full p-2 border rounded focus:ring-2 focus:ring-sky-500"
                         required
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                          Format: DD-MMM-YYYY e.g 16-JAN-2012
+                          Format: DD-MM-YYYY e.g 16-01-2012
                      </p>
                     </div>
               
@@ -3957,70 +3975,82 @@ function StudentManagement({ userInfo }) {
           Add New Student
         </button>)}
       </div>
+                  {/* Add Class Filter */}
+                  <div className="mb-4 flex items-center">
+                    <label className="mr-2 text-sm font-medium text-gray-700">Filter by Class:</label>
+                    <select
+                      value={selectedClassFilter}
+                      onChange={(e) => setSelectedClassFilter(e.target.value)}
+                      className="p-2 border rounded focus:ring-2 focus:ring-sky-500"
+                    >
+                      <option value="">All Classes</option>
+                      {classId.map((classItem) => (
+                        <option key={classItem.pec_class_id} value={classItem.pec_class_id}>
+                          {classItem.pec_class_id}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {successMessage && (
+                    <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+                      {successMessage}
+                    </div>
+                  )}
+                  
+                  {filteredStudents.length === 0 ? (
+                    <p>No students found{selectedClassFilter ? ' for this class' : ''}. Add a new student to get started.</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full bg-white rounded shadow">
+                        <thead>
+                          <tr className="bg-slate-100">
+                            <th className="py-2 px-4 text-left">Name</th>
+                            <th className="py-2 px-4 text-left">Center</th>
+                            <th className="py-2 px-4 text-left">Class ID</th> {/* Added Class ID column */}
+                            <th className="py-2 px-4 text-left">IC Number</th>
+                            <th className="py-2 px-4 text-left">Phone</th>
+                            <th className="py-2 px-4 text-left">Status</th>
+                            {isPA && <th className="py-2 px-4 text-left">Actions</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredStudents.map(student => (
+                            <tr key={student.st_ic} className="border-t">
+                              <td className="py-2 px-4">{student.st_name}</td>
+                              <td className="py-2 px-4">{student.st_pec_code}</td>
+                              <td className="py-2 px-4">{student.st_pec_class_id || '-'}</td> {/* Display Class ID */}
+                              <td className="py-2 px-4">{student.st_ic}</td>
+                              <td className="py-2 px-4">{student.st_tel_no}</td>
+                              <td className="py-2 px-4">
+                                <span className={`inline-block px-2 py-1 rounded text-xs ${
+                                  student.st_status === 'active' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {student.st_status}
+                                </span>
+                              </td>
+                              {isPA && (
+                                <td className="py-2 px-4">
+                                  <button
+                                    onClick={() => handleViewDetails(student)}
+                                    className="text-indigo-500 hover:text-sky-700"
+                                  >
+                                    View
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            }
       
-      {successMessage && (
-        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
-          {successMessage}
-        </div>
-      )}
-      
-      {students.length === 0 ? (
-        <p>No students found. Add a new student to get started.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded shadow">
-            <thead>
-              <tr className="bg-slate-100">
-                <th className="py-2 px-4 text-left">Name</th>
-                <th className="py-2 px-4 text-left">Center</th>
-                <th className="py-2 px-4 text-left">IC Number</th>
-                <th className="py-2 px-4 text-left">Phone</th>
-                
-                <th className="py-2 px-4 text-left">Status</th>
-                {/* Apply conditional rendering for the View button based on the user's role */}
-                {isPA && (
-                  <th className="py-2 px-4 text-left">Actions</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {students.map(student => (
-                <tr key={student.st_ic} className="border-t">
-                  <td className="py-2 px-4">{student.st_name}</td>
-                  <td className="py-2 px-4">{student.st_pec_code}</td>
-                  <td className="py-2 px-4">{student.st_ic}</td>
-                  <td className="py-2 px-4">{student.st_tel_no}</td>
-                  <td className="py-2 px-4">
-                    <span className={`inline-block px-2 py-1 rounded text-xs ${
-                      student.st_status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {student.st_status}
-                    </span>
-                  </td>
-                
-                   <td className="py-2 px-4">
-                          {/* Apply conditional rendering for the View button based on the user's role */}
-                          {isPA && (
-                            <button
-                              onClick={() => handleViewDetails(student)}
-                              className="text-indigo-500 hover:text-sky-700"
-                            >
-                              View
-                            </button>
-                            )}
-                        </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );      
-    }
-
 function FinancialManagement({ userInfo }) {
     const [transactions, setTransactions] = React.useState([]);
     const [centers, setCenters] = React.useState([]);
@@ -4555,6 +4585,7 @@ function FinancialManagement({ userInfo }) {
                                             <span className="text-sm font-medium text-gray-500">Account Type:</span>
                                             <p className="text-gray-900">{selectedTransaction.t_account_lookup?.acct_desc} ({selectedTransaction.t_account_lookup?.acct_type})</p>
                                         </div>
+                                        
                                         <div>
                                             <span className="text-sm font-medium text-gray-500">Transaction Date:</span>
                                             <p className="text-gray-900">{selectedTransaction.ac_txdate ? new Date(selectedTransaction.ac_txdate).toLocaleDateString() : 'Not specified'}</p>
